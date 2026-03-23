@@ -1,5 +1,4 @@
 import type { LogEntry } from "../types";
-import { CATEGORIES } from "../types";
 import {
   computeDailyScore,
   computeScores,
@@ -82,7 +81,7 @@ export default function Dashboard({ entries }: DashboardProps) {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 className="text-sm font-semibold text-gray-600 mb-4">Last 7 Days</h3>
         <div className="flex items-end justify-between gap-2 h-32">
-          {weekScores.map((score, i) => {
+          {weekScores.map((score) => {
             const height = maxWeekScore > 0 ? (score.totalScore / maxWeekScore) * 100 : 0;
             const isToday = score.date === today;
             return (

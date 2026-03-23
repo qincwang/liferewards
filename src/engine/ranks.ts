@@ -57,6 +57,8 @@ export const RANK_DEFINITIONS: RankDef[] = [
       { id: "workout",     label: "Workout sessions", unit: "sessions", getValue: workoutCount, required: 4 },
       { id: "music",       label: "Guitar practice",  unit: "sessions", getValue: musicCount,   required: 5 },
       { id: "clean_meals", label: "Clean meals",      unit: "meals",    getValue: cleanMeals,   required: 10 },
+      { id: "get_up",      label: "Get up at 9",      unit: "days",     getValue: getUpCount,   required: 4 },
+      { id: "sleep",       label: "Sleep at 12:30",   unit: "days",     getValue: sleepCount,   required: 4 },
     ],
   },
   {
@@ -78,6 +80,7 @@ export const RANK_DEFINITIONS: RankDef[] = [
       { id: "clean_meals", label: "Clean meals",      unit: "meals",    getValue: cleanMeals,   required: 14 },
       { id: "reading",     label: "Reading sessions", unit: "sessions", getValue: readingCount, required: 5 },
       { id: "get_up",      label: "Get up at 9",      unit: "days",     getValue: getUpCount,   required: 5 },
+      { id: "sleep",       label: "Sleep at 12:30",   unit: "days",     getValue: sleepCount,   required: 5 },
     ],
   },
   {

@@ -17,6 +17,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
   { id: "workout_general", label: "Workout", category: "workout", type: "duration", pointsPerMinute: 3 },
   { id: "bouldering",      label: "Bouldering", category: "workout", type: "duration", pointsPerMinute: 3 },
   { id: "cardio",          label: "Cardio", category: "workout", type: "duration", pointsPerMinute: 3 },
+  { id: "yoga",            label: "Yoga", category: "workout", type: "duration", pointsPerMinute: 3 },
 
   // --- Work ---
   { id: "work_general",    label: "Work", category: "work", type: "duration", pointsPerMinute: 1 },

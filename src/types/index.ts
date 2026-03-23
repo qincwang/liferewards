@@ -48,11 +48,14 @@ export interface DailyScore {
   hasBalanceBonus: boolean;
 }
 
+export type AchievementTier = "bronze" | "silver" | "gold" | "platinum";
+
 export interface Achievement {
   id: string;
   title: string;
   description: string;
   icon: string;
+  tier: AchievementTier;
   category?: Category;
   unlockedAt?: string;  // ISO date, undefined = locked
 }
