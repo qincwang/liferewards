@@ -15,10 +15,10 @@ export interface ActivityDefinition {
 export const ACTIVITIES: ActivityDefinition[] = [
   // --- Workout ---
   { id: "workout_general", label: "Workout",    category: "workout", type: "duration", pointsPerMinute: 3 },
-  { id: "bouldering",      label: "Bouldering", category: "workout", type: "duration", pointsPerMinute: 3 },
+  { id: "bouldering",      label: "Bouldering", category: "workout", type: "duration", pointsPerMinute: 1.5 },
   { id: "cardio",          label: "Cardio",     category: "workout", type: "duration", pointsPerMinute: 3 },
   { id: "yoga",            label: "Yoga",       category: "workout", type: "duration", pointsPerMinute: 3 },
-  { id: "hiking",          label: "Hiking",     category: "workout", type: "duration", pointsPerMinute: 2 },
+  { id: "hiking",          label: "Hiking",     category: "workout", type: "duration", pointsPerMinute: 1 },
 
   // --- Work ---
   { id: "work_general",      label: "Work",     category: "work", type: "duration", pointsPerMinute: 1   },
