@@ -14,20 +14,25 @@ export interface ActivityDefinition {
 
 export const ACTIVITIES: ActivityDefinition[] = [
   // --- Workout ---
-  { id: "workout_general", label: "Workout", category: "workout", type: "duration", pointsPerMinute: 3 },
+  { id: "workout_general", label: "Workout",    category: "workout", type: "duration", pointsPerMinute: 3 },
   { id: "bouldering",      label: "Bouldering", category: "workout", type: "duration", pointsPerMinute: 3 },
-  { id: "cardio",          label: "Cardio", category: "workout", type: "duration", pointsPerMinute: 3 },
-  { id: "yoga",            label: "Yoga", category: "workout", type: "duration", pointsPerMinute: 3 },
+  { id: "cardio",          label: "Cardio",     category: "workout", type: "duration", pointsPerMinute: 3 },
+  { id: "yoga",            label: "Yoga",       category: "workout", type: "duration", pointsPerMinute: 3 },
+  { id: "hiking",          label: "Hiking",     category: "workout", type: "duration", pointsPerMinute: 2 },
 
   // --- Work ---
-  { id: "work_general",    label: "Work", category: "work", type: "duration", pointsPerMinute: 1 },
+  { id: "work_general",      label: "Work",     category: "work", type: "duration", pointsPerMinute: 1   },
+  { id: "learning_general",  label: "Learning", category: "work", type: "duration", pointsPerMinute: 0.5 },
 
   // --- Reading ---
   { id: "reading_general", label: "Reading", category: "reading", type: "duration", pointsPerMinute: 1 },
 
   // --- Music ---
-  { id: "electric_guitar", label: "Electric Guitar Practice", category: "music", type: "duration", pointsPerMinute: 2 },
-  { id: "classical_guitar",label: "Classical Guitar Practice", category: "music", type: "duration", pointsPerMinute: 2 },
+  { id: "electric_guitar",  label: "Electric Guitar Practice", category: "music", type: "duration", pointsPerMinute: 2   },
+  { id: "classical_guitar", label: "Classical Guitar Practice",category: "music", type: "duration", pointsPerMinute: 2   },
+  { id: "drum_practice",    label: "Drum Practice",            category: "music", type: "duration", pointsPerMinute: 1.5 },
+  { id: "piano_practice",   label: "Piano Practice",           category: "music", type: "duration", pointsPerMinute: 1.5 },
+  { id: "music_theory",     label: "Music Theory",             category: "music", type: "duration", pointsPerMinute: 1   },
 
   // --- Habits ---
   { id: "get_up",    label: "Get Up at 9", category: "habits", type: "habit", flatPoints: 30 },
