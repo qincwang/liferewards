@@ -8,10 +8,11 @@ import ActivityHistory from "./components/ActivityHistory";
 import AchievementsView from "./components/AchievementsView";
 import CalendarView from "./components/CalendarView";
 import StatsView from "./components/StatsView";
+import RulebookView from "./components/RulebookView";
 import Toast from "./components/Toast";
 import { getToday, getWeekStart } from "./engine/scoring";
 
-type Tab = "dashboard" | "history" | "achievements" | "calendar" | "stats";
+type Tab = "dashboard" | "history" | "achievements" | "calendar" | "stats" | "rules";
 
 function App() {
   const {
@@ -110,13 +111,23 @@ function App() {
             >
               📊
             </button>
+            <button
+              onClick={() => setTab("rules")}
+              className={`px-3 py-1 text-sm rounded-md transition-all ${
+                tab === "rules"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              📖
+            </button>
           </nav>
         </div>
       </header>
 
       {/* Main content */}
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {tab !== "achievements" && tab !== "calendar" && tab !== "stats" && (
+        {tab !== "achievements" && tab !== "calendar" && tab !== "stats" && tab !== "rules" && (
           <LogForm onLog={logActivity} weekHeavyMeals={weekHeavyMeals} />
         )}
 
@@ -133,6 +144,7 @@ function App() {
           <AchievementsView achievements={achievements} />
         )}
         {tab === "stats" && <StatsView entries={entries} />}
+        {tab === "rules" && <RulebookView />}
       </main>
 
       {/* Achievement unlock toast */}
