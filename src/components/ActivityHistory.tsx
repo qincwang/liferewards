@@ -78,26 +78,26 @@ export default function ActivityHistory({ entries, onDelete, onEdit }: ActivityH
 
   if (entries.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 text-center text-gray-400 dark:text-slate-500">
         No activities logged yet. Start tracking!
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Activity History</h2>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4">Activity History</h2>
       <div className="space-y-5">
         {groups.map(({ date, entries: dayEntries }) => (
           <div key={date}>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            <div className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-2">
               {formatDate(date)}
             </div>
             <div className="space-y-2">
               {dayEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 group"
+                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 group"
                 >
                   {editingId === entry.id ? (
                     <div className="flex items-center gap-2 flex-1">
@@ -108,10 +108,10 @@ export default function ActivityHistory({ entries, onDelete, onEdit }: ActivityH
                             type="number"
                             value={editDuration}
                             onChange={(e) => setEditDuration(e.target.value)}
-                            className="w-20 px-2 py-1 border border-gray-200 rounded text-sm"
+                            className="w-20 px-2 py-1 border border-gray-200 dark:border-slate-600 rounded text-sm dark:bg-slate-800 dark:text-slate-100"
                             min="1"
                           />
-                          <span className="text-xs text-gray-400">min</span>
+                          <span className="text-xs text-gray-400 dark:text-slate-500">min</span>
                         </>
                       )}
                       <input
@@ -119,7 +119,7 @@ export default function ActivityHistory({ entries, onDelete, onEdit }: ActivityH
                         value={editNote}
                         onChange={(e) => setEditNote(e.target.value)}
                         placeholder="Note"
-                        className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm"
+                        className="flex-1 px-2 py-1 border border-gray-200 dark:border-slate-600 rounded text-sm dark:bg-slate-800 dark:text-slate-100"
                       />
                       <button
                         onClick={() => saveEdit(entry.id, entry)}
@@ -129,7 +129,7 @@ export default function ActivityHistory({ entries, onDelete, onEdit }: ActivityH
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="text-xs text-gray-400 hover:text-gray-600"
+                        className="text-xs text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
                       >
                         Cancel
                       </button>
@@ -139,16 +139,16 @@ export default function ActivityHistory({ entries, onDelete, onEdit }: ActivityH
                       <div className="flex items-center gap-3">
                         <span>{CATEGORY_ICONS[entry.category]}</span>
                         <div>
-                          <span className="text-sm font-medium text-gray-700">
+                          <span className="text-sm font-medium text-gray-700 dark:text-slate-200">
                             {entryLabel(entry)}
                           </span>
                           {entry.duration > 0 && (
-                            <span className="text-sm text-gray-500 ml-2">
+                            <span className="text-sm text-gray-500 dark:text-slate-400 ml-2">
                               {entry.duration} min
                             </span>
                           )}
                           {entry.note && (
-                            <span className="text-xs text-gray-400 ml-2">
+                            <span className="text-xs text-gray-400 dark:text-slate-500 ml-2">
                               — {entry.note}
                             </span>
                           )}
@@ -157,13 +157,13 @@ export default function ActivityHistory({ entries, onDelete, onEdit }: ActivityH
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => startEdit(entry)}
-                          className="text-xs text-gray-400 hover:text-indigo-600"
+                          className="text-xs text-gray-400 dark:text-slate-600 hover:text-indigo-600"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => onDelete(entry.id)}
-                          className="text-xs text-gray-400 hover:text-red-500"
+                          className="text-xs text-gray-400 dark:text-slate-600 hover:text-red-500"
                         >
                           Delete
                         </button>

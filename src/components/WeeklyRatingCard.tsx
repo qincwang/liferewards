@@ -24,15 +24,15 @@ function ConditionRow({ c }: { c: ConditionProgress }) {
   return (
     <div>
       <div className="flex justify-between items-center mb-0.5">
-        <span className={`text-xs ${c.met ? "text-gray-400 line-through" : "text-gray-600"}`}>
+        <span className={`text-xs ${c.met ? "text-gray-400 dark:text-slate-600 line-through" : "text-gray-600 dark:text-slate-300"}`}>
           {c.label}
         </span>
-        <span className={`text-xs font-medium ${c.met ? "text-emerald-600" : "text-gray-500"}`}>
+        <span className={`text-xs font-medium ${c.met ? "text-emerald-600" : "text-gray-500 dark:text-slate-400"}`}>
           {c.met ? "✓" : `${c.displayCurrent} / ${c.displayRequired} ${c.unit}`}
         </span>
       </div>
       {!c.met && (
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
           <div
             className="h-full bg-indigo-400 rounded-full transition-all duration-500"
             style={{ width: `${pct}%` }}
@@ -50,11 +50,11 @@ export default function WeeklyRatingCard({ weeklyRating }: WeeklyRatingCardProps
   const unmetCount = nextConditions.filter((c) => !c.met).length;
 
   return (
-    <div className={`rounded-2xl border p-5 bg-white ${style.glow}`}>
+    <div className={`rounded-2xl border dark:border-slate-700 p-5 bg-white dark:bg-slate-900 ${style.glow}`}>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Weekly Rating</p>
-          <p className="text-xs text-gray-400 mt-0.5">{weeklyTotal.toLocaleString()} pts this week</p>
+          <p className="text-xs font-medium text-gray-400 dark:text-slate-500 uppercase tracking-wide">Weekly Rating</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{weeklyTotal.toLocaleString()} pts this week</p>
         </div>
         <div className={`text-4xl font-black leading-none px-4 py-2 rounded-xl border ${style.badge}`}>
           {rating}
@@ -62,8 +62,8 @@ export default function WeeklyRatingCard({ weeklyRating }: WeeklyRatingCardProps
       </div>
 
       {!isMax && nextConditions.length > 0 && (
-        <div className="border-t border-gray-100 pt-3 space-y-2.5">
-          <p className="text-xs font-semibold text-gray-500">
+        <div className="border-t border-gray-100 dark:border-slate-700 pt-3 space-y-2.5">
+          <p className="text-xs font-semibold text-gray-500 dark:text-slate-400">
             {unmetCount === 0
               ? `✓ All conditions met for ${NEXT_RANK[rating]}!`
               : `${unmetCount} condition${unmetCount > 1 ? "s" : ""} needed for ${NEXT_RANK[rating]}`}

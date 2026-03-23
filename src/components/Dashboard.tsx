@@ -78,24 +78,24 @@ export default function Dashboard({ entries }: DashboardProps) {
       </div>
 
       {/* Weekly chart */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-sm font-semibold text-gray-600 mb-4">Last 7 Days</h3>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+        <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-400 mb-4">Last 7 Days</h3>
         <div className="flex items-end justify-between gap-2 h-32">
           {weekScores.map((score) => {
             const height = maxWeekScore > 0 ? (score.totalScore / maxWeekScore) * 100 : 0;
             const isToday = score.date === today;
             return (
               <div key={score.date} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-xs text-gray-500 dark:text-slate-500 font-medium">
                   {score.totalScore > 0 ? score.totalScore : ""}
                 </span>
                 <div
                   className={`w-full rounded-t-md transition-all duration-500 ${
-                    isToday ? "bg-indigo-500" : "bg-indigo-200"
+                    isToday ? "bg-indigo-500" : "bg-indigo-200 dark:bg-indigo-800"
                   }`}
                   style={{ height: `${Math.max(height, 4)}%` }}
                 />
-                <span className={`text-xs ${isToday ? "font-bold text-indigo-600" : "text-gray-400"}`}>
+                <span className={`text-xs ${isToday ? "font-bold text-indigo-600" : "text-gray-400 dark:text-slate-500"}`}>
                   {WEEKDAYS[new Date(score.date + "T00:00:00").getDay() === 0 ? 6 : new Date(score.date + "T00:00:00").getDay() - 1]}
                 </span>
               </div>

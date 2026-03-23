@@ -10,16 +10,16 @@ interface CalendarViewProps {
 
 // ─── Color scale by daily pts ────────────────────────────────────────────────
 function heatColor(pts: number): string {
-  if (pts === 0)    return "bg-gray-100";
-  if (pts < 200)    return "bg-indigo-100";
-  if (pts < 500)    return "bg-indigo-300";
-  if (pts < 1000)   return "bg-indigo-500";
-  return "bg-indigo-700";
+  if (pts === 0)    return "bg-gray-100 dark:bg-slate-800";
+  if (pts < 200)    return "bg-indigo-100 dark:bg-indigo-950";
+  if (pts < 500)    return "bg-indigo-300 dark:bg-indigo-800";
+  if (pts < 1000)   return "bg-indigo-500 dark:bg-indigo-600";
+  return "bg-indigo-700 dark:bg-indigo-500";
 }
 
 function heatTextColor(pts: number): string {
-  if (pts === 0)  return "text-gray-300";
-  if (pts < 500)  return "text-indigo-700";
+  if (pts === 0)  return "text-gray-300 dark:text-slate-600";
+  if (pts < 500)  return "text-indigo-700 dark:text-indigo-300";
   return "text-white";
 }
 
@@ -123,14 +123,14 @@ export default function CalendarView({ entries }: CalendarViewProps) {
     <div className="space-y-5">
 
       {/* ── Heatmap ─────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h3 className="text-sm font-semibold text-gray-600 mb-3">90-Day Heatmap</h3>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5">
+        <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-400 mb-3">90-Day Heatmap</h3>
 
         <div className="flex gap-0.5 overflow-x-auto pb-1">
           {/* Day labels */}
           <div className="flex flex-col gap-0.5 mr-1 shrink-0">
             {DAY_LABELS.map((d) => (
-              <div key={d} className="h-3.5 flex items-center text-[9px] text-gray-400 w-6">{d}</div>
+              <div key={d} className="h-3.5 flex items-center text-[9px] text-gray-400 dark:text-slate-500 w-6">{d}</div>
             ))}
           </div>
 
@@ -155,31 +155,31 @@ export default function CalendarView({ entries }: CalendarViewProps) {
 
         {/* Legend */}
         <div className="flex items-center gap-1.5 mt-2">
-          <span className="text-[10px] text-gray-400">Less</span>
-          {["bg-gray-100","bg-indigo-100","bg-indigo-300","bg-indigo-500","bg-indigo-700"].map((c) => (
+          <span className="text-[10px] text-gray-400 dark:text-slate-500">Less</span>
+          {["bg-gray-100 dark:bg-slate-800","bg-indigo-100 dark:bg-indigo-950","bg-indigo-300 dark:bg-indigo-800","bg-indigo-500 dark:bg-indigo-600","bg-indigo-700 dark:bg-indigo-500"].map((c) => (
             <div key={c} className={`w-3 h-3 rounded-sm ${c}`} />
           ))}
-          <span className="text-[10px] text-gray-400">More</span>
+          <span className="text-[10px] text-gray-400 dark:text-slate-500">More</span>
         </div>
       </div>
 
       {/* ── Month Calendar ───────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={prevMonth}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-400 transition-colors"
           >
             ‹
           </button>
-          <h3 className="text-sm font-semibold text-gray-800">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">
             {MONTH_NAMES[viewMonth]} {viewYear}
           </h3>
           <button
             onClick={nextMonth}
             disabled={isNextDisabled}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             ›
           </button>
@@ -188,7 +188,7 @@ export default function CalendarView({ entries }: CalendarViewProps) {
         {/* Day-of-week headers */}
         <div className="grid grid-cols-7 mb-1">
           {DAY_LABELS.map((d) => (
-            <div key={d} className="text-center text-[10px] font-medium text-gray-400 py-1">{d}</div>
+            <div key={d} className="text-center text-[10px] font-medium text-gray-400 dark:text-slate-500 py-1">{d}</div>
           ))}
         </div>
 
@@ -210,11 +210,11 @@ export default function CalendarView({ entries }: CalendarViewProps) {
                   transition-all text-xs font-medium
                   ${isFuture ? "opacity-20 cursor-not-allowed" : "cursor-pointer"}
                   ${isSelected ? "ring-2 ring-indigo-500 ring-offset-1" : ""}
-                  ${pts > 0 ? heatColor(pts) : "bg-gray-50 hover:bg-gray-100"}
+                  ${pts > 0 ? heatColor(pts) : "bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700"}
                   ${isToday && !isSelected ? "ring-2 ring-indigo-300" : ""}
                 `}
               >
-                <span className={`text-[11px] font-semibold leading-none ${pts > 0 ? heatTextColor(pts) : "text-gray-400"}`}>
+                <span className={`text-[11px] font-semibold leading-none ${pts > 0 ? heatTextColor(pts) : "text-gray-400 dark:text-slate-500"}`}>
                   {new Date(date + "T00:00:00").getDate()}
                 </span>
                 {pts > 0 && (
@@ -230,31 +230,31 @@ export default function CalendarView({ entries }: CalendarViewProps) {
 
       {/* ── Selected Day Detail ──────────────────────── */}
       {selected && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">
               {new Date(selected + "T00:00:00").toLocaleDateString("en-US", {
                 weekday: "long", month: "long", day: "numeric",
               })}
             </h3>
-            <span className={`text-sm font-bold ${selectedScore > 0 ? "text-indigo-600" : "text-gray-400"}`}>
+            <span className={`text-sm font-bold ${selectedScore > 0 ? "text-indigo-600" : "text-gray-400 dark:text-slate-500"}`}>
               {selectedScore} pts
             </span>
           </div>
 
           {selectedEntries.length === 0 ? (
-            <p className="text-sm text-gray-400">No activities logged this day.</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500">No activities logged this day.</p>
           ) : (
             <div className="space-y-2">
               {selectedEntries.map((e) => (
-                <div key={e.id} className="flex items-center gap-3 py-1.5 px-3 bg-gray-50 rounded-lg">
+                <div key={e.id} className="flex items-center gap-3 py-1.5 px-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   <span>{CATEGORY_ICONS[e.category]}</span>
-                  <span className="text-sm text-gray-700 flex-1">{entryLabel(e)}</span>
+                  <span className="text-sm text-gray-700 dark:text-slate-200 flex-1">{entryLabel(e)}</span>
                   {e.duration > 0 && (
-                    <span className="text-xs text-gray-400">{e.duration} min</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{e.duration} min</span>
                   )}
                   {e.note && (
-                    <span className="text-xs text-gray-400 italic">{e.note}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 italic">{e.note}</span>
                   )}
                 </div>
               ))}

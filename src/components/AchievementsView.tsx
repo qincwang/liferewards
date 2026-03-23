@@ -90,7 +90,7 @@ export default function AchievementsView({ achievements }: AchievementsViewProps
             className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap border transition-all ${
               filter === opt.value
                 ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                : "bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700"
             }`}
           >
             {opt.label}
@@ -107,8 +107,8 @@ export default function AchievementsView({ achievements }: AchievementsViewProps
               key={a.id}
               className={`rounded-xl p-4 border-2 transition-all ${
                 a.unlockedAt
-                  ? `bg-white ${tier.ring} ${tier.glow}`
-                  : "bg-gray-50 border-gray-100 opacity-40"
+                  ? `bg-white dark:bg-slate-900 ${tier.ring} ${tier.glow}`
+                  : "bg-gray-50 dark:bg-slate-800 border-gray-100 dark:border-slate-700 opacity-40"
               }`}
             >
               {/* Tier badge */}
@@ -118,10 +118,10 @@ export default function AchievementsView({ achievements }: AchievementsViewProps
                   {tier.label}
                 </span>
               </div>
-              <p className={`text-sm font-semibold ${a.unlockedAt ? "text-gray-800" : "text-gray-400"}`}>
+              <p className={`text-sm font-semibold ${a.unlockedAt ? "text-gray-800 dark:text-slate-100" : "text-gray-400 dark:text-slate-600"}`}>
                 {a.title}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5 leading-tight">{a.description}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 leading-tight">{a.description}</p>
               {a.unlockedAt && (
                 <p className="text-xs text-indigo-500 mt-1.5 font-medium">✓ {formatDate(a.unlockedAt)}</p>
               )}
@@ -131,7 +131,7 @@ export default function AchievementsView({ achievements }: AchievementsViewProps
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-gray-400 dark:text-slate-500">
           <p className="text-4xl mb-2">🔒</p>
           <p className="text-sm">No achievements here yet</p>
         </div>

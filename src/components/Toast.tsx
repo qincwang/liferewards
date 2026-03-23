@@ -49,7 +49,7 @@ export default function Toast({ achievements, onDismiss }: ToastProps) {
         <div>
           <p className="text-xs font-medium text-yellow-400 uppercase tracking-wide">Achievement Unlocked!</p>
           <p className="text-sm font-bold">{current.title}</p>
-          <p className="text-xs text-gray-400">{current.description}</p>
+          <p className="text-xs text-gray-400 dark:text-slate-400">{current.description}</p>
         </div>
         {achievements.length > 1 && (
           <span className="ml-auto text-xs text-gray-500">{index + 1}/{achievements.length}</span>

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useLifeData } from "./hooks/useLifeData";
+import { useTheme } from "./hooks/useTheme";
+import type { ThemeMode } from "./hooks/useTheme";
 import Dashboard from "./components/Dashboard";
 import LogForm from "./components/LogForm";
 import ActivityHistory from "./components/ActivityHistory";
@@ -22,6 +24,7 @@ function App() {
     dismissNewAchievements,
   } = useLifeData();
   const [tab, setTab] = useState<Tab>("dashboard");
+  const { mode, cycle } = useTheme();
 
   // Count heavy meals logged this week (for warning in LogForm)
   const today = getToday();
@@ -32,21 +35,32 @@ function App() {
 
   const unlockedCount = achievements.filter((a) => !!a.unlockedAt).length;
 
+  const THEME_ICONS: Record<ThemeMode, string> = { auto: "⚙️", light: "☀️", dark: "🌙" };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <header className="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">
-            <span className="text-indigo-600">Life</span>Rewards
-          </h1>
-          <nav className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">
+              <span className="text-indigo-600">Life</span>Rewards
+            </h1>
+            <button
+              onClick={cycle}
+              title={`Theme: ${mode}`}
+              className="text-sm p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+            >
+              {THEME_ICONS[mode]}
+            </button>
+          </div>
+          <nav className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
             <button
               onClick={() => setTab("dashboard")}
               className={`px-3 py-1 text-sm rounded-md transition-all ${
                 tab === "dashboard"
-                  ? "bg-white text-gray-800 shadow-sm font-medium"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               Dashboard
@@ -55,8 +69,8 @@ function App() {
               onClick={() => setTab("history")}
               className={`px-3 py-1 text-sm rounded-md transition-all ${
                 tab === "history"
-                  ? "bg-white text-gray-800 shadow-sm font-medium"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               History
@@ -65,8 +79,8 @@ function App() {
               onClick={() => setTab("calendar")}
               className={`px-3 py-1 text-sm rounded-md transition-all ${
                 tab === "calendar"
-                  ? "bg-white text-gray-800 shadow-sm font-medium"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               📅
@@ -75,8 +89,8 @@ function App() {
               onClick={() => setTab("achievements")}
               className={`px-3 py-1 text-sm rounded-md transition-all relative ${
                 tab === "achievements"
-                  ? "bg-white text-gray-800 shadow-sm font-medium"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               🏆
@@ -90,8 +104,8 @@ function App() {
               onClick={() => setTab("stats")}
               className={`px-3 py-1 text-sm rounded-md transition-all ${
                 tab === "stats"
-                  ? "bg-white text-gray-800 shadow-sm font-medium"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               📊

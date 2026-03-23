@@ -23,11 +23,11 @@ const RATING_COLORS: Record<Rating, string> = {
 };
 
 const CATEGORY_BG: Record<string, string> = {
-  workout: "from-orange-50 border-orange-100",
-  work:    "from-blue-50   border-blue-100",
-  reading: "from-emerald-50 border-emerald-100",
-  music:   "from-purple-50 border-purple-100",
-  habits:  "from-pink-50   border-pink-100",
+  workout: "from-orange-50  border-orange-100  dark:from-slate-900 dark:border-slate-700",
+  work:    "from-blue-50    border-blue-100    dark:from-slate-900 dark:border-slate-700",
+  reading: "from-emerald-50 border-emerald-100 dark:from-slate-900 dark:border-slate-700",
+  music:   "from-purple-50  border-purple-100  dark:from-slate-900 dark:border-slate-700",
+  habits:  "from-pink-50    border-pink-100    dark:from-slate-900 dark:border-slate-700",
 };
 
 function fmtDuration(minutes: number): string {
@@ -130,7 +130,7 @@ export default function StatsView({ entries }: StatsViewProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
+      <div className="text-center py-20 text-gray-400 dark:text-slate-500">
         <p className="text-4xl mb-3">📊</p>
         <p className="text-sm">Log some activities to see your stats</p>
       </div>
@@ -179,10 +179,10 @@ export default function StatsView({ entries }: StatsViewProps) {
           { label: "Best Day",      value: stats.bestDayScore.toLocaleString() + " pts", sub: stats.bestDay ?? "—" },
           { label: "Best Streak",   value: `${stats.streak}d`,                       sub: "consecutive days" },
         ].map(({ label, value, sub }) => (
-          <div key={label} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <p className="text-xs text-gray-400 mb-1">{label}</p>
-            <p className="text-2xl font-bold text-gray-800 leading-tight">{value}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+          <div key={label} className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-gray-100 dark:border-slate-700 shadow-sm">
+            <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{label}</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-slate-100 leading-tight">{value}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{sub}</p>
           </div>
         ))}
       </div>
@@ -193,27 +193,27 @@ export default function StatsView({ entries }: StatsViewProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-xl">{CATEGORY_ICONS[cat as keyof typeof CATEGORY_ICONS]}</span>
-              <span className="font-semibold text-gray-800">{CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}</span>
+              <span className="font-semibold text-gray-800 dark:text-slate-100">{CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}</span>
             </div>
             <div className="text-right">
-              <p className="text-sm font-bold text-gray-800">{sessions} sessions</p>
-              <p className="text-xs text-gray-500">{fmtDuration(totalMins)}</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-slate-100">{sessions} sessions</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{fmtDuration(totalMins)}</p>
             </div>
           </div>
 
           {activities.length > 1 && (
-            <div className="space-y-1.5 pt-2 border-t border-black/5">
+            <div className="space-y-1.5 pt-2 border-t border-black/5 dark:border-white/5">
               {activities.map(({ label, count, mins }) => (
                 <div key={label} className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">{label}</span>
-                  <span className="text-xs text-gray-500 font-medium">{count}× · {fmtDuration(mins)}</span>
+                  <span className="text-xs text-gray-600 dark:text-slate-400">{label}</span>
+                  <span className="text-xs text-gray-500 dark:text-slate-400 font-medium">{count}× · {fmtDuration(mins)}</span>
                 </div>
               ))}
             </div>
           )}
 
           {sessions === 0 && (
-            <p className="text-xs text-gray-400 pt-2 border-t border-black/5">No sessions logged</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 pt-2 border-t border-black/5 dark:border-white/5">No sessions logged</p>
           )}
         </div>
       ))}
@@ -222,28 +222,28 @@ export default function StatsView({ entries }: StatsViewProps) {
       <div className={`bg-gradient-to-br ${CATEGORY_BG["habits"]} border rounded-2xl p-4`}>
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xl">{CATEGORY_ICONS["habits"]}</span>
-          <span className="font-semibold text-gray-800">Habits</span>
+          <span className="font-semibold text-gray-800 dark:text-slate-100">Habits</span>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-gray-600">🌅 Get up at 9</span>
-            <span className="text-xs font-semibold text-gray-800">{habitStats.getUp} times</span>
+            <span className="text-xs text-gray-600 dark:text-slate-400">🌅 Get up at 9</span>
+            <span className="text-xs font-semibold text-gray-800 dark:text-slate-100">{habitStats.getUp} times</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-xs text-gray-600">🌙 Sleep at 12:30</span>
-            <span className="text-xs font-semibold text-gray-800">{habitStats.sleep} times</span>
+            <span className="text-xs text-gray-600 dark:text-slate-400">🌙 Sleep at 12:30</span>
+            <span className="text-xs font-semibold text-gray-800 dark:text-slate-100">{habitStats.sleep} times</span>
           </div>
-          <div className="pt-2 border-t border-black/5">
-            <p className="text-xs text-gray-500 mb-1.5">Meals</p>
+          <div className="pt-2 border-t border-black/5 dark:border-white/5">
+            <p className="text-xs text-gray-500 dark:text-slate-500 mb-1.5">Meals</p>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Clean",   value: habitStats.clean,   color: "text-emerald-600" },
                 { label: "Regular", value: habitStats.regular, color: "text-gray-600" },
                 { label: "Heavy",   value: habitStats.heavy,   color: "text-red-500" },
               ].map(({ label, value, color }) => (
-                <div key={label} className="text-center bg-white/60 rounded-lg py-2">
+                <div key={label} className="text-center bg-white/60 dark:bg-white/5 rounded-lg py-2">
                   <p className={`text-base font-bold ${color}`}>{value}</p>
-                  <p className="text-xs text-gray-400">{label}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">{label}</p>
                 </div>
               ))}
             </div>
@@ -252,10 +252,10 @@ export default function StatsView({ entries }: StatsViewProps) {
       </div>
 
       {/* Weekly rating distribution */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-semibold text-gray-800">Weekly Ratings</p>
-          <p className="text-xs text-gray-400">{totalWeeks} week{totalWeeks !== 1 ? "s" : ""} tracked</p>
+          <p className="font-semibold text-gray-800 dark:text-slate-100">Weekly Ratings</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">{totalWeeks} week{totalWeeks !== 1 ? "s" : ""} tracked</p>
         </div>
         <div className="space-y-2">
           {RATING_ORDER.map((r) => {
@@ -264,13 +264,13 @@ export default function StatsView({ entries }: StatsViewProps) {
             return (
               <div key={r} className="flex items-center gap-3">
                 <span className={`text-xs font-bold w-7 text-center px-1 py-0.5 rounded ${RATING_COLORS[r]}`}>{r}</span>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-700 ${RATING_COLORS[r].split(" ")[0].replace("text", "bg")}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className="text-xs text-gray-500 w-8 text-right">{count}w</span>
+                <span className="text-xs text-gray-500 dark:text-slate-400 w-8 text-right">{count}w</span>
               </div>
             );
           })}
