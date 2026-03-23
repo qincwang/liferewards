@@ -44,7 +44,7 @@ function ConditionRow({ c }: { c: ConditionProgress }) {
 }
 
 export default function WeeklyRatingCard({ weeklyRating }: WeeklyRatingCardProps) {
-  const { rating, weeklyTotal, nextRating, nextConditions } = weeklyRating;
+  const { rating, weeklyTotal, nextConditions } = weeklyRating;
   const style = RATING_STYLES[rating];
   const isMax = rating === "SSS";
   const unmetCount = nextConditions.filter((c) => !c.met).length;

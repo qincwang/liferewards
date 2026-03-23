@@ -48,6 +48,28 @@ npm run build
 npm run preview
 ```
 
+### Desktop (Electron)
+
+```bash
+# Run as a desktop app in dev mode
+npm run electron:dev
+
+# Build a macOS .dmg for direct distribution
+npm run electron:build:mac
+
+# Build a .pkg for Mac App Store submission
+npm run electron:build:mas
+```
+
+#### Before building for Mac App Store
+
+- [ ] Add `build/icon.icns` — convert a 1024×1024 PNG with `iconutil` or `electron-icon-builder`
+- [ ] Enroll in the Apple Developer Program (developer.apple.com, $99/yr)
+- [ ] Create App ID `com.liferewards.app` in App Store Connect
+- [ ] Generate a **Mac App Distribution** certificate + **Mac Installer Distribution** certificate
+- [ ] Set env vars: `CSC_NAME`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`
+- [ ] Run `npm run electron:build:mas` on a **macOS machine** (Apple's toolchain requirement)
+
 ---
 
 ## Rule Book
