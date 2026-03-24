@@ -1,7 +1,7 @@
 {
   "name": "liferewards",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -10,21 +10,29 @@
     "build:ios": "eas build --platform ios"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.0",
-    "@react-native-async-storage/async-storage": "1.23.1",
-    "expo": "~53.0.0",
-    "expo-router": "~4.0.0",
-    "expo-status-bar": "~2.0.0",
+    "@expo/vector-icons": "^14.0.4",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-navigation/native": "^7.1.33",
+    "expo": "~55.0.8",
+    "expo-constants": "~55.0.9",
+    "expo-font": "~55.0.4",
+    "expo-linking": "~55.0.8",
+    "expo-router": "~55.0.7",
+    "expo-splash-screen": "~55.0.12",
+    "expo-status-bar": "~55.0.4",
     "nativewind": "^4.1.23",
-    "react": "18.3.1",
-    "react-native": "0.76.5",
-    "react-native-safe-area-context": "4.12.0",
-    "react-native-screens": "~4.4.0",
-    "tailwindcss": "^3.4.0"
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.2",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-web": "~0.21.0",
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",
-    "@types/react": "~18.3.12",
-    "typescript": "~5.3.3"
-  }
+    "@types/react": "~19.2.2",
+    "typescript": "~5.9.2"
+  },
+  "private": true
 }
