@@ -1,6 +1,6 @@
 import type { Category } from "../types";
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_LABELS } from "../types";
-import { CATEGORY_DAILY_CAP } from "../engine/rules";
+import { CATEGORY_DAILY_CAP, CATEGORY_DISPLAY_TARGET } from "../engine/rules";
 
 interface ScoreCardProps {
   category: Category;
@@ -10,8 +10,8 @@ interface ScoreCardProps {
 
 export default function ScoreCard({ category, score, streak }: ScoreCardProps) {
   const cap = CATEGORY_DAILY_CAP[category];
-  const isHabits = category === "habits";
-  const pct = cap ? Math.min(Math.max((score / cap) * 100, 0), 100) : 0;
+  const displayTarget = CATEGORY_DISPLAY_TARGET[category];
+  const pct = Math.min(Math.max((score / displayTarget) * 100, 0), 100);
   const isNegative = score < 0;
 
   return (
@@ -30,17 +30,15 @@ export default function ScoreCard({ category, score, streak }: ScoreCardProps) {
         {isNegative ? "" : score > 0 && isHabits ? "+" : ""}{score}
         <span className="text-xs font-normal text-gray-400 dark:text-slate-500 ml-1">pts</span>
       </div>
-      {!isHabits && cap && (
-        <>
-          <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
-            <div
-              className={`${CATEGORY_COLORS[category]} h-2 rounded-full transition-all duration-500`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <div className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-right">{cap} max</div>
-        </>
-      )}
+      <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
+        <div
+          className={`${CATEGORY_COLORS[category]} h-2 rounded-full transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <div className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-right">
+        {cap ? `${cap} max` : `${displayTarget} target`}
+      </div>
     </div>
   );
 }

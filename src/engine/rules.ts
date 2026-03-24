@@ -28,6 +28,15 @@ export const CATEGORY_DAILY_CAP: Record<Category, number | null> = {
   habits:  null,  // habits use flat points, no cap needed
 };
 
+// --- Soft display target for progress bar (used only in UI, not enforced) ---
+export const CATEGORY_DISPLAY_TARGET: Record<Category, number> = {
+  workout: 500,
+  work:    500,
+  reading: 300,
+  music:   400,
+  habits:  200,
+};
+
 export function getStreakMultiplier(streakDays: number): number {
   for (const { days, multiplier } of STREAK_THRESHOLDS) {
     if (streakDays >= days) return multiplier;

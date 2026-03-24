@@ -1,4 +1,6 @@
 import type { Achievement, AchievementTier, LogEntry } from "../types";
+import type { PieceLog } from "../store/pieces";
+import type { BookLog } from "../store/books";
 import { computeWeeklyRating, computeScores, getWeekStart } from "./scoring";
 
 // ─── Achievement definitions ─────────────────────────────────────────────────
@@ -176,6 +178,49 @@ const DEFINITIONS: Def[] = [
   def("music_200",    "🎸👑", "Guitar Legend",     "Complete 200 music sessions",                             "platinum", "music"),
   def("work_1000hrs", "💻👑", "One Thousand Hours","Log 1,000 total hours of work",                           "platinum"),
   def("clean_meals_500","🥗👑","Clean Machine",    "Log 500 clean meals total",                               "platinum", "habits"),
+
+  // ── PIECES — BRONZE ─────────────────────────────────────────────────────────
+  def("piece_first",          "🎵",  "First in the Repertoire", "Add your first piece to the repertoire",              "bronze", "music"),
+  def("piece_electric_first", "🎸",  "Electric Debut",          "Add your first Electric Guitar piece",                "bronze", "music"),
+  def("piece_classical_first","🎼",  "Classical Debut",         "Add your first Classical Guitar piece",               "bronze", "music"),
+  def("piece_drums_first",    "🥁",  "Drums Debut",             "Add your first Drums piece",                          "bronze", "music"),
+  def("piece_piano_first",    "🎹",  "Piano Debut",             "Add your first Piano piece",                          "bronze", "music"),
+  def("pieces_5",             "🎵",  "Handful of Pieces",       "Have 5 pieces in your repertoire",                    "bronze", "music"),
+
+  // ── PIECES — SILVER ─────────────────────────────────────────────────────────
+  def("pieces_10",            "🎶",  "Growing Repertoire",      "Have 10 pieces in your repertoire",                   "silver", "music"),
+  def("pieces_multi_2",       "🎸🎹","Two-Instrument Player",   "Have pieces on 2 different instruments",              "silver", "music"),
+  def("piece_advanced_first", "💀",  "Challenging Myself",      "Add your first Advanced piece",                       "silver", "music"),
+
+  // ── PIECES — GOLD ───────────────────────────────────────────────────────────
+  def("pieces_25",            "🎵🎵","Solid Repertoire",        "Have 25 pieces in your repertoire",                   "gold",   "music"),
+  def("pieces_multi_3",       "🎸🥁🎹","Triple Threat",         "Have pieces on 3 different instruments",              "gold",   "music"),
+  def("pieces_advanced_5",    "💀💀", "Advanced Performer",     "Have 5 Advanced pieces in your repertoire",           "gold",   "music"),
+
+  // ── PIECES — PLATINUM ───────────────────────────────────────────────────────
+  def("pieces_50",            "🎼👑","Master Repertoire",       "Have 50 pieces in your repertoire",                   "platinum","music"),
+  def("pieces_all_instruments","🎸🎼🥁🎹","Full Band",          "Have pieces on all 4 main instruments",               "platinum","music"),
+
+  // ── BOOKS — BRONZE ──────────────────────────────────────────────────────────
+  def("book_first",       "📖",    "First Page Turned",   "Log your first book",                                   "bronze", "reading"),
+  def("book_easy_first",  "🌱",    "Light Read",          "Log your first easy book",                              "bronze", "reading"),
+  def("book_hard_first",  "💀",    "Committed Reader",    "Log your first high-effort book",                       "bronze", "reading"),
+  def("books_3",          "📚",    "Shelf Starter",       "Log 3 books",                                           "bronze", "reading"),
+  def("books_5",          "📚",    "Growing Collection",  "Log 5 books",                                           "bronze", "reading"),
+
+  // ── BOOKS — SILVER ──────────────────────────────────────────────────────────
+  def("books_10",         "📖📖",  "Avid Reader",         "Log 10 books",                                          "silver", "reading"),
+  def("books_all_efforts","🌱🔥💀","Well-Read",            "Log at least one book of every effort level",           "silver", "reading"),
+  def("books_year_5",     "📅",    "Annual Reader",       "Log 5 books in a single year",                          "silver", "reading"),
+
+  // ── BOOKS — GOLD ────────────────────────────────────────────────────────────
+  def("books_25",         "📚📚",  "Bookworm",            "Log 25 books",                                          "gold",   "reading"),
+  def("books_year_12",    "📆",    "A Book a Month",      "Log 12 books in a single year",                         "gold",   "reading"),
+  def("books_hard_5",     "💀📚",  "Deep Thinker",        "Log 5 high-effort books",                               "gold",   "reading"),
+
+  // ── BOOKS — PLATINUM ────────────────────────────────────────────────────────
+  def("books_50",         "📚👑",  "Literary Scholar",    "Log 50 books",                                          "platinum","reading"),
+  def("books_year_24",    "🗓️",    "Ravenous Reader",     "Log 24 books in a single year",                         "platinum","reading"),
 ];
 
 // ─── Helper functions ─────────────────────────────────────────────────────────
@@ -290,11 +335,23 @@ function hasEarnedBalanceBonus(entries: LogEntry[]): boolean {
   return computeScores(entries, dates).some((s) => s.hasBalanceBonus);
 }
 
+function maxBooksInYear(books: BookLog[]): number {
+  if (books.length === 0) return 0;
+  const countsByYear = new Map<string, number>();
+  for (const b of books) {
+    const y = b.finishedDate.slice(0, 4);
+    countsByYear.set(y, (countsByYear.get(y) ?? 0) + 1);
+  }
+  return Math.max(...countsByYear.values());
+}
+
 // ─── Main compute function ───────────────────────────────────────────────────
 
 export function computeAchievements(
   entries: LogEntry[],
-  previouslyUnlocked: Map<string, string>
+  previouslyUnlocked: Map<string, string>,
+  pieces: PieceLog[] = [],
+  books: BookLog[] = []
 ): Achievement[] {
   const now = new Date().toISOString().slice(0, 10);
   const maxStreak = maxStreakAny(entries);
@@ -305,6 +362,11 @@ export function computeAchievements(
   const allWorkHours = totalWorkHours(entries);
   const allCleanMeals = totalCleanMeals(entries);
   const totalSessions = countDurationSessions(entries);
+
+  // Pieces helpers
+  const pieceInstruments = new Set(pieces.map((p) => p.instrument));
+  const mainInstruments: Array<PieceLog["instrument"]> = ["electric_guitar", "classical_guitar", "drums", "piano"];
+  const pieceAdvancedCount = pieces.filter((p) => p.difficulty === "advanced").length;
 
   function check(id: string, condition: boolean): string | undefined {
     if (!condition) return undefined;
@@ -446,6 +508,37 @@ export function computeAchievements(
     music_200:              check("music_200",              countCategory(entries, "music") >= 200),
     work_1000hrs:           check("work_1000hrs",           allWorkHours >= 1000),
     clean_meals_500:        check("clean_meals_500",        allCleanMeals >= 500),
+
+    // ── BOOKS ────────────────────────────────────────────────────────────────
+    book_first:             check("book_first",             books.length >= 1),
+    book_easy_first:        check("book_easy_first",        books.some((b) => b.effort === "easy")),
+    book_hard_first:        check("book_hard_first",        books.some((b) => b.effort === "high")),
+    books_3:                check("books_3",                books.length >= 3),
+    books_5:                check("books_5",                books.length >= 5),
+    books_10:               check("books_10",               books.length >= 10),
+    books_all_efforts:      check("books_all_efforts",      ["easy","medium","high"].every((e) => books.some((b) => b.effort === e))),
+    books_year_5:           check("books_year_5",           maxBooksInYear(books) >= 5),
+    books_25:               check("books_25",               books.length >= 25),
+    books_year_12:          check("books_year_12",          maxBooksInYear(books) >= 12),
+    books_hard_5:           check("books_hard_5",           books.filter((b) => b.effort === "high").length >= 5),
+    books_50:               check("books_50",               books.length >= 50),
+    books_year_24:          check("books_year_24",          maxBooksInYear(books) >= 24),
+
+    // ── PIECES ───────────────────────────────────────────────────────────────
+    piece_first:            check("piece_first",            pieces.length >= 1),
+    piece_electric_first:   check("piece_electric_first",   pieces.some((p) => p.instrument === "electric_guitar")),
+    piece_classical_first:  check("piece_classical_first",  pieces.some((p) => p.instrument === "classical_guitar")),
+    piece_drums_first:      check("piece_drums_first",      pieces.some((p) => p.instrument === "drums")),
+    piece_piano_first:      check("piece_piano_first",      pieces.some((p) => p.instrument === "piano")),
+    pieces_5:               check("pieces_5",               pieces.length >= 5),
+    pieces_10:              check("pieces_10",              pieces.length >= 10),
+    pieces_multi_2:         check("pieces_multi_2",         pieceInstruments.size >= 2),
+    piece_advanced_first:   check("piece_advanced_first",   pieceAdvancedCount >= 1),
+    pieces_25:              check("pieces_25",              pieces.length >= 25),
+    pieces_multi_3:         check("pieces_multi_3",         pieceInstruments.size >= 3),
+    pieces_advanced_5:      check("pieces_advanced_5",      pieceAdvancedCount >= 5),
+    pieces_50:              check("pieces_50",              pieces.length >= 50),
+    pieces_all_instruments: check("pieces_all_instruments", mainInstruments.every((i) => pieceInstruments.has(i))),
   };
 
   return DEFINITIONS.map((def) => ({

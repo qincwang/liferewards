@@ -8,6 +8,7 @@ import {
 } from "../engine/scoring";
 import ScoreCard from "./ScoreCard";
 import WeeklyRatingCard from "./WeeklyRatingCard";
+import DailyPassage from "./DailyPassage";
 
 interface DashboardProps {
   entries: LogEntry[];
@@ -38,6 +39,9 @@ export default function Dashboard({ entries }: DashboardProps) {
 
   return (
     <div className="space-y-4">
+      {/* Daily classic passage */}
+      <DailyPassage />
+
       {/* Weekly Rating */}
       <WeeklyRatingCard weeklyRating={weeklyRating} />
 

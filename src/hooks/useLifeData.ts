@@ -10,16 +10,22 @@ import {
   saveUnlockedAchievements,
   updateEntry,
 } from "../store/storage";
+import { loadPieces } from "../store/pieces";
+import type { PieceLog } from "../store/pieces";
+import { loadBooks, addBook, deleteBook } from "../store/books";
+import type { BookLog } from "../store/books";
 
 export function useLifeData() {
   const [entries, setEntries] = useState<LogEntry[]>(loadEntries);
+  const [pieces, setPieces] = useState<PieceLog[]>(loadPieces);
+  const [books, setBooks] = useState<BookLog[]>(loadBooks);
   const [unlockedMap, setUnlockedMap] = useState(loadUnlockedAchievements);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
 
-  // Recompute achievements whenever entries change
+  // Recompute achievements whenever entries or pieces change
   useEffect(() => {
-    const computed = computeAchievements(entries, unlockedMap);
+    const computed = computeAchievements(entries, unlockedMap, pieces, books);
     const fresh = getNewlyUnlocked(computed, unlockedMap);
 
     // Build the current unlocked map from computed results (handles regressions on delete)
@@ -39,7 +45,7 @@ export function useLifeData() {
     }
 
     setAchievements(computed);
-  }, [entries]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [entries, pieces, books]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const logActivity = useCallback(
     (
@@ -85,8 +91,21 @@ export function useLifeData() {
     setNewAchievements([]);
   }, []);
 
+  const addBookEntry = useCallback((book: BookLog) => {
+    setBooks(addBook(book));
+  }, []);
+
+  const deleteBookEntry = useCallback((id: string) => {
+    setBooks(deleteBook(id));
+  }, []);
+
   return {
     entries,
+    pieces,
+    setPieces,
+    books,
+    addBookEntry,
+    deleteBookEntry,
     logActivity,
     removeEntry,
     editEntry,

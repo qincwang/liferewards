@@ -3,9 +3,21 @@ import type { LogEntry, Rating } from "../types";
 import { CATEGORY_ICONS, CATEGORY_LABELS } from "../types";
 import { computeScores, computeWeeklyRating, getWeekStart } from "../engine/scoring";
 import { ACTIVITIES_BY_ID } from "../engine/activities";
+import type { BookLog } from "../store/books";
+import type { PieceLog, PieceInstrument } from "../store/pieces";
+
+const PIECE_INSTRUMENT_LABEL: Record<PieceInstrument, string> = {
+  electric_guitar:  "🎸 Electric",
+  classical_guitar: "🎼 Classical",
+  drums:            "🥁 Drums",
+  piano:            "🎹 Piano",
+  other:            "🎵 Other",
+};
 
 interface StatsViewProps {
   entries: LogEntry[];
+  books: BookLog[];
+  pieces: PieceLog[];
 }
 
 const DURATION_CATEGORIES = ["workout", "work", "reading", "music"] as const;
@@ -53,7 +65,7 @@ function maxConsecutiveDays(entries: LogEntry[]): number {
   return max;
 }
 
-export default function StatsView({ entries }: StatsViewProps) {
+export default function StatsView({ entries, books, pieces }: StatsViewProps) {
   // ── Year filter ─────────────────────────────────────────────────────────────
   const years = useMemo(() => {
     const ys = [...new Set(entries.map((e) => e.date.slice(0, 4)))].sort().reverse();
@@ -114,6 +126,32 @@ export default function StatsView({ entries }: StatsViewProps) {
     return { getUp, sleep, clean, regular, heavy };
   }, [filtered]);
 
+  // ── Books stats ──────────────────────────────────────────────────────────────
+  const bookStats = useMemo(() => {
+    const fb = year === "all" ? books : books.filter((b) => b.finishedDate.startsWith(year));
+    return {
+      total: fb.length,
+      easy:   fb.filter((b) => b.effort === "easy").length,
+      medium: fb.filter((b) => b.effort === "medium").length,
+      high:   fb.filter((b) => b.effort === "high").length,
+    };
+  }, [books, year]);
+
+  // ── Pieces stats ─────────────────────────────────────────────────────────────
+  const pieceStats = useMemo(() => {
+    const fp = year === "all" ? pieces : pieces.filter((p) => p.masteredDate.startsWith(year));
+    const byInstrument = (["electric_guitar", "classical_guitar", "drums", "piano", "other"] as PieceLog["instrument"][])
+      .map((inst) => ({ inst, count: fp.filter((p) => p.instrument === inst).length }))
+      .filter((x) => x.count > 0);
+    return {
+      total: fp.length,
+      beginner:     fp.filter((p) => p.difficulty === "beginner").length,
+      intermediate: fp.filter((p) => p.difficulty === "intermediate").length,
+      advanced:     fp.filter((p) => p.difficulty === "advanced").length,
+      byInstrument,
+    };
+  }, [pieces, year]);
+
   // ── Weekly rating distribution ────────────────────────────────────────────────
   const ratingDist = useMemo(() => {
     const dist = Object.fromEntries(RATING_ORDER.map((r) => [r, 0])) as Record<Rating, number>;
@@ -128,22 +166,21 @@ export default function StatsView({ entries }: StatsViewProps) {
 
   const totalWeeks = Object.values(ratingDist).reduce((s, n) => s + n, 0);
 
-  if (entries.length === 0) {
-    return (
-      <div className="text-center py-20 text-gray-400 dark:text-slate-500">
-        <p className="text-4xl mb-3">📊</p>
-        <p className="text-sm">Log some activities to see your stats</p>
-      </div>
-    );
-  }
+  const hasAnyData = entries.length > 0 || books.length > 0 || pieces.length > 0;
 
   return (
     <div className="space-y-4">
       {/* Header + year filter */}
       <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white shadow-lg">
         <p className="text-sm opacity-80 mb-1">Total Stats</p>
-        <p className="text-3xl font-bold">{stats.totalPoints.toLocaleString()} pts</p>
-        <p className="text-sm opacity-70 mt-0.5">{stats.daysLogged} days logged · {stats.streak}-day best streak</p>
+        {hasAnyData ? (
+          <>
+            <p className="text-3xl font-bold">{stats.totalPoints.toLocaleString()} pts</p>
+            <p className="text-sm opacity-70 mt-0.5">{stats.daysLogged} days logged · {stats.streak}-day best streak</p>
+          </>
+        ) : (
+          <p className="text-lg font-semibold opacity-90">No data yet — start logging!</p>
+        )}
 
         {/* Year pills */}
         {years.length > 0 && (
@@ -249,6 +286,79 @@ export default function StatsView({ entries }: StatsViewProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Books read */}
+      <div className="bg-gradient-to-br from-teal-50 border-teal-100 dark:from-slate-900 dark:border-slate-700 border rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📚</span>
+            <span className="font-semibold text-gray-800 dark:text-slate-100">Books Read</span>
+          </div>
+          <p className="text-sm font-bold text-gray-800 dark:text-slate-100">{bookStats.total} book{bookStats.total !== 1 ? "s" : ""}</p>
+        </div>
+        {bookStats.total > 0 ? (
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-black/5 dark:border-white/5">
+            {[
+              { label: "🌱 Easy",   value: bookStats.easy,   sub: "2–4 hrs" },
+              { label: "🔥 Medium", value: bookStats.medium, sub: "~10 hrs" },
+              { label: "💀 High",   value: bookStats.high,   sub: "20+ hrs" },
+            ].map(({ label, value, sub }) => (
+              <div key={label} className="text-center bg-white/60 dark:bg-white/5 rounded-lg py-2">
+                <p className="text-base font-bold text-gray-800 dark:text-slate-100">{value}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500">{sub}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 dark:text-slate-500 pt-2 border-t border-black/5 dark:border-white/5">
+            No books logged yet — go to the 📚 tab to track your reading
+          </p>
+        )}
+      </div>
+
+      {/* Pieces mastered */}
+      <div className="bg-gradient-to-br from-violet-50 border-violet-100 dark:from-slate-900 dark:border-slate-700 border rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎵</span>
+            <span className="font-semibold text-gray-800 dark:text-slate-100">Pieces Mastered</span>
+          </div>
+          <p className="text-sm font-bold text-gray-800 dark:text-slate-100">{pieceStats.total} piece{pieceStats.total !== 1 ? "s" : ""}</p>
+        </div>
+        {pieceStats.total > 0 ? (
+          <div className="space-y-3 pt-2 border-t border-black/5 dark:border-white/5">
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "🌱 Beginner",     value: pieceStats.beginner },
+                { label: "🔥 Intermediate", value: pieceStats.intermediate },
+                { label: "💀 Advanced",     value: pieceStats.advanced },
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center bg-white/60 dark:bg-white/5 rounded-lg py-2">
+                  <p className="text-base font-bold text-gray-800 dark:text-slate-100">{value}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
+                </div>
+              ))}
+            </div>
+            {pieceStats.byInstrument.length > 0 && (
+              <div className="space-y-1.5">
+                {pieceStats.byInstrument.map(({ inst, count }) => (
+                  <div key={inst} className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600 dark:text-slate-400">
+                      {PIECE_INSTRUMENT_LABEL[inst]}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-800 dark:text-slate-100">{count} piece{count !== 1 ? "s" : ""}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 dark:text-slate-500 pt-2 border-t border-black/5 dark:border-white/5">
+            No pieces added yet — go to the 🎵 tab to build your repertoire
+          </p>
+        )}
       </div>
 
       {/* Weekly rating distribution */}

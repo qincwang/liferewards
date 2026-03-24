@@ -9,14 +9,24 @@ import AchievementsView from "./components/AchievementsView";
 import CalendarView from "./components/CalendarView";
 import StatsView from "./components/StatsView";
 import RulebookView from "./components/RulebookView";
+import BooksView from "./components/BooksView";
+import PiecesView from "./components/PiecesView";
 import Toast from "./components/Toast";
+import ErrorBoundary from "./components/ErrorBoundary";
+import StreakFuneralModal from "./components/StreakFuneral";
+import { useStreakFunerals } from "./hooks/useStreakFunerals";
 import { getToday, getWeekStart } from "./engine/scoring";
 
-type Tab = "dashboard" | "history" | "achievements" | "calendar" | "stats" | "rules";
+type Tab = "dashboard" | "history" | "achievements" | "calendar" | "stats" | "rules" | "books" | "pieces";
 
 function App() {
   const {
     entries,
+    pieces,
+    setPieces,
+    books,
+    addBookEntry,
+    deleteBookEntry,
     logActivity,
     removeEntry,
     editEntry,
@@ -26,6 +36,7 @@ function App() {
   } = useLifeData();
   const [tab, setTab] = useState<Tab>("dashboard");
   const { mode, cycle } = useTheme();
+  const { funeral, dismiss: dismissFuneral } = useStreakFunerals(entries);
 
   // Count heavy meals logged this week (for warning in LogForm)
   const today = getToday();
@@ -121,13 +132,34 @@ function App() {
             >
               📖
             </button>
+            <button
+              onClick={() => setTab("books")}
+              className={`px-3 py-1 text-sm rounded-md transition-all ${
+                tab === "books"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              📚
+            </button>
+            <button
+              onClick={() => setTab("pieces")}
+              className={`px-3 py-1 text-sm rounded-md transition-all ${
+                tab === "pieces"
+                  ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              🎵
+            </button>
           </nav>
         </div>
       </header>
 
       {/* Main content */}
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {tab !== "achievements" && tab !== "calendar" && tab !== "stats" && tab !== "rules" && (
+        <ErrorBoundary>
+        {tab !== "achievements" && tab !== "calendar" && tab !== "stats" && tab !== "rules" && tab !== "books" && tab !== "pieces" && (
           <LogForm onLog={logActivity} weekHeavyMeals={weekHeavyMeals} />
         )}
 
@@ -143,12 +175,18 @@ function App() {
         {tab === "achievements" && (
           <AchievementsView achievements={achievements} />
         )}
-        {tab === "stats" && <StatsView entries={entries} />}
+        {tab === "stats" && <StatsView entries={entries} books={books} pieces={pieces} />}
         {tab === "rules" && <RulebookView />}
+        {tab === "books" && <BooksView books={books} onAdd={addBookEntry} onDelete={deleteBookEntry} />}
+        {tab === "pieces" && <PiecesView pieces={pieces} onPiecesChange={setPieces} />}
+        </ErrorBoundary>
       </main>
 
       {/* Achievement unlock toast */}
       <Toast achievements={newAchievements} onDismiss={dismissNewAchievements} />
+
+      {/* Streak funeral */}
+      {funeral && <StreakFuneralModal funeral={funeral} onDismiss={dismissFuneral} />}
     </div>
   );
 }
