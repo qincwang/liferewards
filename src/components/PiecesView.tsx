@@ -1,21 +1,22 @@
 import { useState } from "react";
-import { addPiece, deletePiece, fetchPieceCover } from "../store/pieces";
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, ActivityIndicator } from "react-native";
+import { fetchPieceCover } from "../store/pieces";
 import type { PieceLog, PieceDifficulty, PieceInstrument } from "../store/pieces";
 
 // ─── Meta ──────────────────────────────────────────────────────────────────────
 
-const INSTRUMENT_META: Record<PieceInstrument, { label: string; icon: string; color: string; selected: string }> = {
-  electric_guitar:  { label: "Electric",  icon: "🎸", color: "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300", selected: "ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-950" },
-  classical_guitar: { label: "Classical", icon: "🎼", color: "bg-amber-100  dark:bg-amber-950  text-amber-700  dark:text-amber-300",  selected: "ring-2 ring-amber-500  bg-amber-50  dark:bg-amber-950"  },
-  drums:            { label: "Drums",     icon: "🥁", color: "bg-red-100    dark:bg-red-950    text-red-700    dark:text-red-300",    selected: "ring-2 ring-red-500    bg-red-50    dark:bg-red-950"    },
-  piano:            { label: "Piano",     icon: "🎹", color: "bg-blue-100   dark:bg-blue-950   text-blue-700   dark:text-blue-300",   selected: "ring-2 ring-blue-500   bg-blue-50   dark:bg-blue-950"   },
-  other:            { label: "Other",     icon: "🎵", color: "bg-gray-100   dark:bg-slate-800  text-gray-600   dark:text-slate-300",  selected: "ring-2 ring-gray-400   bg-gray-50   dark:bg-slate-800"  },
+const INSTRUMENT_META: Record<PieceInstrument, { label: string; icon: string; selectedRing: string; badgeBg: string; badgeText: string }> = {
+  electric_guitar:  { label: "Electric",  icon: "🎸", selectedRing: "border-purple-500 bg-purple-50", badgeBg: "bg-purple-100", badgeText: "text-purple-700" },
+  classical_guitar: { label: "Classical", icon: "🎼", selectedRing: "border-amber-500  bg-amber-50",  badgeBg: "bg-amber-100",  badgeText: "text-amber-700"  },
+  drums:            { label: "Drums",     icon: "🥁", selectedRing: "border-red-500    bg-red-50",    badgeBg: "bg-red-100",    badgeText: "text-red-700"    },
+  piano:            { label: "Piano",     icon: "🎹", selectedRing: "border-blue-500   bg-blue-50",   badgeBg: "bg-blue-100",   badgeText: "text-blue-700"   },
+  other:            { label: "Other",     icon: "🎵", selectedRing: "border-gray-400   bg-gray-50",   badgeBg: "bg-gray-100",   badgeText: "text-gray-600"   },
 };
 
-const DIFFICULTY_META: Record<PieceDifficulty, { label: string; icon: string; sublabel: string; selected: string }> = {
-  beginner:     { label: "Beginner",     icon: "🌱", sublabel: "Entry level", selected: "ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-950" },
-  intermediate: { label: "Intermediate", icon: "🔥", sublabel: "Takes work",  selected: "ring-2 ring-amber-500   bg-amber-50   dark:bg-amber-950"   },
-  advanced:     { label: "Advanced",     icon: "💀", sublabel: "Demanding",   selected: "ring-2 ring-red-500     bg-red-50     dark:bg-red-950"     },
+const DIFFICULTY_META: Record<PieceDifficulty, { label: string; icon: string; sublabel: string; selectedRing: string }> = {
+  beginner:     { label: "Beginner",     icon: "🌱", sublabel: "Entry level", selectedRing: "border-emerald-500 bg-emerald-50" },
+  intermediate: { label: "Intermediate", icon: "🔥", sublabel: "Takes work",  selectedRing: "border-amber-500   bg-amber-50"   },
+  advanced:     { label: "Advanced",     icon: "💀", sublabel: "Demanding",   selectedRing: "border-red-500     bg-red-50"     },
 };
 
 const INSTRUMENTS = Object.keys(INSTRUMENT_META) as PieceInstrument[];
@@ -45,15 +46,14 @@ function AddForm({ onAdd }: AddFormProps) {
   const [date, setDate] = useState(today);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     if (!title.trim()) return;
     setLoading(true);
 
     const coverUrl = await fetchPieceCover(instrument);
 
     onAdd({
-      id: crypto.randomUUID(),
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       title: title.trim(),
       composer: composer.trim() || undefined,
       instrument,
@@ -71,130 +71,111 @@ function AddForm({ onAdd }: AddFormProps) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 space-y-4"
-    >
-      <h2 className="text-sm font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wide">
+    <View className="bg-white rounded-2xl border border-gray-100 p-5 gap-y-4 shadow-sm">
+      <Text className="text-sm font-bold text-gray-700 uppercase tracking-wide">
         🎵 Add a Piece
-      </h2>
+      </Text>
 
       {/* Title */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">
-          Piece Title
-        </label>
-        <input
-          type="text"
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-1">Piece Title</Text>
+        <TextInput
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChangeText={setTitle}
           placeholder="e.g. Asturias (Leyenda)"
-          required
-          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-gray-50 text-gray-800"
+          placeholderTextColor="#9ca3af"
         />
-      </div>
+      </View>
 
-      {/* Composer + Date row */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">
-            Composer <span className="font-normal text-gray-400 dark:text-slate-500">(optional)</span>
-          </label>
-          <input
-            type="text"
+      {/* Composer + Date */}
+      <View className="flex-row gap-3">
+        <View className="flex-1">
+          <Text className="text-xs font-medium text-gray-500 mb-1">
+            Composer <Text className="font-normal text-gray-400">(optional)</Text>
+          </Text>
+          <TextInput
             value={composer}
-            onChange={(e) => setComposer(e.target.value)}
+            onChangeText={setComposer}
             placeholder="e.g. Isaac Albéniz"
-            className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-gray-50 text-gray-800"
+            placeholderTextColor="#9ca3af"
           />
-        </div>
-        <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">
-            Mastered Date
-          </label>
-          <input
-            type="date"
+        </View>
+        <View className="flex-1">
+          <Text className="text-xs font-medium text-gray-500 mb-1">Mastered Date</Text>
+          <TextInput
             value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            onChangeText={setDate}
+            placeholder="YYYY-MM-DD"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-gray-50 text-gray-800"
+            placeholderTextColor="#9ca3af"
           />
-        </div>
-      </div>
+        </View>
+      </View>
 
       {/* Instrument picker */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">
-          Instrument
-        </label>
-        <div className="grid grid-cols-5 gap-1.5">
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-2">Instrument</Text>
+        <View className="flex-row gap-1.5">
           {INSTRUMENTS.map((inst) => {
             const m = INSTRUMENT_META[inst];
             const active = instrument === inst;
             return (
-              <button
+              <TouchableOpacity
                 key={inst}
-                type="button"
-                onClick={() => setInstrument(inst)}
-                className={`flex flex-col items-center gap-1 py-2 rounded-xl border transition-all ${
-                  active
-                    ? `${m.selected} border-transparent`
-                    : "border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700"
+                onPress={() => setInstrument(inst)}
+                className={`flex-1 items-center gap-1 py-2 rounded-xl border-2 ${
+                  active ? m.selectedRing : "border-gray-200 bg-gray-50"
                 }`}
               >
-                <span className="text-lg">{m.icon}</span>
-                <span className={`text-[10px] font-semibold leading-tight text-center ${active ? "" : "text-gray-600 dark:text-slate-300"}`}>
+                <Text className="text-lg">{m.icon}</Text>
+                <Text style={{ fontSize: 10 }} className={`font-semibold text-center leading-tight ${active ? "" : "text-gray-600"}`}>
                   {m.label}
-                </span>
-              </button>
+                </Text>
+              </TouchableOpacity>
             );
           })}
-        </div>
-      </div>
+        </View>
+      </View>
 
       {/* Difficulty picker */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">
-          Difficulty
-        </label>
-        <div className="grid grid-cols-3 gap-2">
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-2">Difficulty</Text>
+        <View className="flex-row gap-2">
           {DIFFICULTIES.map((lvl) => {
             const m = DIFFICULTY_META[lvl];
             const active = difficulty === lvl;
             return (
-              <button
+              <TouchableOpacity
                 key={lvl}
-                type="button"
-                onClick={() => setDifficulty(lvl)}
-                className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all ${
-                  active
-                    ? `${m.selected} border-transparent`
-                    : "border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700"
+                onPress={() => setDifficulty(lvl)}
+                className={`flex-1 items-center gap-1 py-2.5 rounded-xl border-2 ${
+                  active ? m.selectedRing : "border-gray-200 bg-gray-50"
                 }`}
               >
-                <span className="text-xl">{m.icon}</span>
-                <span className={`text-xs font-semibold ${active ? "" : "text-gray-600 dark:text-slate-300"}`}>
-                  {m.label}
-                </span>
-                <span className="text-[10px] text-gray-400 dark:text-slate-500">{m.sublabel}</span>
-              </button>
+                <Text className="text-xl">{m.icon}</Text>
+                <Text className={`text-xs font-semibold ${active ? "" : "text-gray-600"}`}>{m.label}</Text>
+                <Text style={{ fontSize: 10 }} className="text-gray-400">{m.sublabel}</Text>
+              </TouchableOpacity>
             );
           })}
-        </div>
-      </div>
+        </View>
+      </View>
 
-      <button
-        type="submit"
+      <TouchableOpacity
+        onPress={handleSubmit}
         disabled={loading || !title.trim()}
-        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 dark:disabled:bg-indigo-800 text-white transition-colors flex items-center justify-center gap-2"
+        className={`w-full py-2.5 rounded-xl items-center flex-row justify-center gap-2 ${
+          loading || !title.trim() ? "bg-indigo-300" : "bg-indigo-600"
+        }`}
       >
-        {loading ? (
-          <><span className="animate-spin">⏳</span> Fetching cover…</>
-        ) : (
-          "Add to Repertoire"
-        )}
-      </button>
-    </form>
+        {loading
+          ? <><ActivityIndicator size="small" color="#fff" /><Text className="text-white text-sm font-semibold"> Fetching cover…</Text></>
+          : <Text className="text-white text-sm font-semibold">Add to Repertoire</Text>
+        }
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -208,50 +189,52 @@ interface PieceCardProps {
 function PieceCard({ piece, onDelete }: PieceCardProps) {
   const inst = INSTRUMENT_META[piece.instrument];
   const diff = DIFFICULTY_META[piece.difficulty];
+  const [imgError, setImgError] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
+    <View className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" style={{ width: "31%" }}>
       {/* Cover / icon area */}
-      <div className={`aspect-[2/3] flex flex-col items-center justify-center relative ${piece.coverUrl ? "" : inst.color}`}>
-        {piece.coverUrl ? (
-          <img
-            src={piece.coverUrl}
-            alt={piece.title}
-            className="w-full h-full object-cover"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+      <View
+        className={`items-center justify-center relative ${piece.coverUrl && !imgError ? "" : inst.badgeBg}`}
+        style={{ aspectRatio: 2/3 }}
+      >
+        {piece.coverUrl && !imgError ? (
+          <Image
+            source={{ uri: piece.coverUrl }}
+            className="w-full h-full"
+            resizeMode="cover"
+            onError={() => setImgError(true)}
           />
         ) : (
-          <span className="text-5xl select-none">{inst.icon}</span>
+          <Text className="text-5xl">{inst.icon}</Text>
         )}
         {/* Instrument + difficulty badges */}
-        <span className="absolute bottom-2 left-2 text-base bg-black/30 rounded-full px-1.5 py-0.5">
-          {inst.icon}{diff.icon}
-        </span>
-        {/* Delete */}
-        <button
-          onClick={() => onDelete(piece.id)}
-          title="Remove"
-          className="absolute top-1.5 right-1.5 bg-black/30 hover:bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors"
+        <View className="absolute bottom-2 left-2 bg-black/30 rounded-full px-1.5 py-0.5">
+          <Text style={{ fontSize: 12 }}>{inst.icon}{diff.icon}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => onDelete(piece.id)}
+          className="absolute top-1.5 right-1.5 bg-black/30 rounded-full w-6 h-6 items-center justify-center"
         >
-          ×
-        </button>
-      </div>
+          <Text className="text-white text-xs font-bold">×</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Info */}
-      <div className="p-3 flex flex-col gap-1 flex-1">
-        <p className="text-sm font-semibold text-gray-800 dark:text-slate-100 leading-snug line-clamp-2">
+      <View className="p-3 gap-y-1">
+        <Text className="text-sm font-semibold text-gray-800 leading-snug" numberOfLines={2}>
           {piece.title}
-        </p>
+        </Text>
         {piece.composer && (
-          <p className="text-xs text-gray-500 dark:text-slate-400 italic line-clamp-1">
+          <Text className="text-xs text-gray-500 italic" numberOfLines={1}>
             {piece.composer}
-          </p>
+          </Text>
         )}
-        <p className="text-xs text-gray-400 dark:text-slate-500 mt-auto pt-1">
+        <Text className="text-xs text-gray-400 mt-auto pt-1">
           {formatDate(piece.masteredDate)}
-        </p>
-      </div>
-    </div>
+        </Text>
+      </View>
+    </View>
   );
 }
 
@@ -259,104 +242,94 @@ function PieceCard({ piece, onDelete }: PieceCardProps) {
 
 interface PiecesViewProps {
   pieces: PieceLog[];
-  onPiecesChange: (pieces: PieceLog[]) => void;
+  onAdd: (piece: PieceLog) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function PiecesView({ pieces, onPiecesChange }: PiecesViewProps) {
+export default function PiecesView({ pieces, onAdd, onDelete }: PiecesViewProps) {
   const [filterInstrument, setFilterInstrument] = useState<PieceInstrument | "all">("all");
-
-  function handleAdd(piece: PieceLog) {
-    onPiecesChange(addPiece(piece));
-  }
-
-  function handleDelete(id: string) {
-    onPiecesChange(deletePiece(id));
-  }
 
   const filtered = pieces
     .filter((p) => filterInstrument === "all" || p.instrument === filterInstrument)
     .sort((a, b) => b.masteredDate.localeCompare(a.masteredDate));
 
-  // Stats
   const byInstrument = INSTRUMENTS.map((inst) => ({
     inst,
     count: pieces.filter((p) => p.instrument === inst).length,
   })).filter((x) => x.count > 0);
 
   return (
-    <div className="space-y-5">
+    <View className="gap-y-5">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
-        <p className="text-lg font-bold mb-1">🎵 My Repertoire</p>
-        <p className="text-sm opacity-80 leading-relaxed">
+      <View className="bg-violet-600 rounded-2xl p-5 shadow-lg">
+        <Text className="text-lg font-bold text-white mb-1">🎵 My Repertoire</Text>
+        <Text className="text-sm text-white/80 leading-relaxed">
           Every piece you can play. {pieces.length > 0 ? `${pieces.length} piece${pieces.length !== 1 ? "s" : ""} and counting.` : "Start building it."}
-        </p>
-      </div>
+        </Text>
+      </View>
 
       {/* Add form */}
-      <AddForm onAdd={handleAdd} />
+      <AddForm onAdd={onAdd} />
 
       {/* Instrument filter */}
       {byInstrument.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setFilterInstrument("all")}
-            className={`px-3 py-1 text-sm rounded-full font-medium transition-colors ${
-              filterInstrument === "all"
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
-            }`}
-          >
-            All ({pieces.length})
-          </button>
-          {byInstrument.map(({ inst, count }) => (
-            <button
-              key={inst}
-              onClick={() => setFilterInstrument(inst)}
-              className={`px-3 py-1 text-sm rounded-full font-medium transition-colors ${
-                filterInstrument === inst
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
-              }`}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setFilterInstrument("all")}
+              className={`px-3 py-1 rounded-full ${filterInstrument === "all" ? "bg-indigo-600" : "bg-gray-100"}`}
             >
-              {INSTRUMENT_META[inst].icon} {INSTRUMENT_META[inst].label} ({count})
-            </button>
-          ))}
-        </div>
+              <Text className={`text-sm font-medium ${filterInstrument === "all" ? "text-white" : "text-gray-600"}`}>
+                All ({pieces.length})
+              </Text>
+            </TouchableOpacity>
+            {byInstrument.map(({ inst, count }) => (
+              <TouchableOpacity
+                key={inst}
+                onPress={() => setFilterInstrument(inst)}
+                className={`px-3 py-1 rounded-full ${filterInstrument === inst ? "bg-indigo-600" : "bg-gray-100"}`}
+              >
+                <Text className={`text-sm font-medium ${filterInstrument === inst ? "text-white" : "text-gray-600"}`}>
+                  {INSTRUMENT_META[inst].icon} {INSTRUMENT_META[inst].label} ({count})
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       )}
 
       {/* Summary stats */}
       {pieces.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
+        <View className="flex-row gap-3">
           {(["beginner", "intermediate", "advanced"] as PieceDifficulty[]).map((lvl) => {
             const count = pieces.filter((p) => p.difficulty === lvl).length;
             return (
-              <div key={lvl} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-700 p-3 text-center">
-                <p className="text-xl font-black text-gray-800 dark:text-slate-100">{count}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+              <View key={lvl} className="bg-white rounded-xl border border-gray-100 p-3 items-center flex-1">
+                <Text className="text-xl font-black text-gray-800">{count}</Text>
+                <Text className="text-xs text-gray-400 mt-0.5 text-center">
                   {DIFFICULTY_META[lvl].icon} {DIFFICULTY_META[lvl].label}
-                </p>
-              </div>
+                </Text>
+              </View>
             );
           })}
-        </div>
+        </View>
       )}
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-slate-500">
-          <p className="text-4xl mb-3">🎵</p>
-          <p className="text-sm">
+        <View className="items-center py-16">
+          <Text className="text-4xl mb-3">🎵</Text>
+          <Text className="text-sm text-gray-400">
             {pieces.length === 0 ? "No pieces yet. Add your first one!" : "No pieces match this filter."}
-          </p>
-        </div>
+          </Text>
+        </View>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <View className="flex-row flex-wrap gap-3">
           {filtered.map((piece) => (
-            <PieceCard key={piece.id} piece={piece} onDelete={handleDelete} />
+            <PieceCard key={piece.id} piece={piece} onDelete={onDelete} />
           ))}
-        </div>
+        </View>
       )}
-    </div>
+    </View>
   );
 }

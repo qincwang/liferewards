@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { LogEntry } from "../types";
 
 const ENTRIES_KEY = "liferewards_data";
@@ -5,55 +6,55 @@ const UNLOCKED_KEY = "liferewards_achievements";
 
 // ─── Entries ─────────────────────────────────────────────────────────────────
 
-export function loadEntries(): LogEntry[] {
+export async function loadEntries(): Promise<LogEntry[]> {
   try {
-    const raw = localStorage.getItem(ENTRIES_KEY);
+    const raw = await AsyncStorage.getItem(ENTRIES_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function saveEntries(entries: LogEntry[]): void {
-  localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+export async function saveEntries(entries: LogEntry[]): Promise<void> {
+  await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
 }
 
-export function addEntry(entry: LogEntry): LogEntry[] {
-  const entries = loadEntries();
+export async function addEntry(entry: LogEntry): Promise<LogEntry[]> {
+  const entries = await loadEntries();
   entries.push(entry);
-  saveEntries(entries);
+  await saveEntries(entries);
   return entries;
 }
 
-export function deleteEntry(id: string): LogEntry[] {
-  const entries = loadEntries().filter((e) => e.id !== id);
-  saveEntries(entries);
+export async function deleteEntry(id: string): Promise<LogEntry[]> {
+  const entries = (await loadEntries()).filter((e) => e.id !== id);
+  await saveEntries(entries);
   return entries;
 }
 
-export function updateEntry(
+export async function updateEntry(
   id: string,
   updates: Partial<Pick<LogEntry, "duration" | "note" | "category" | "activityId" | "mealType">>
-): LogEntry[] {
-  const entries = loadEntries().map((e) =>
+): Promise<LogEntry[]> {
+  const entries = (await loadEntries()).map((e) =>
     e.id === id ? { ...e, ...updates } : e
   );
-  saveEntries(entries);
+  await saveEntries(entries);
   return entries;
 }
 
 // ─── Achievement unlock timestamps ──────────────────────────────────────────
 
 /** Stored as { [achievementId]: isoDateString } */
-export function loadUnlockedAchievements(): Map<string, string> {
+export async function loadUnlockedAchievements(): Promise<Map<string, string>> {
   try {
-    const raw = localStorage.getItem(UNLOCKED_KEY);
+    const raw = await AsyncStorage.getItem(UNLOCKED_KEY);
     return raw ? new Map(Object.entries(JSON.parse(raw))) : new Map();
   } catch {
     return new Map();
   }
 }
 
-export function saveUnlockedAchievements(unlocked: Map<string, string>): void {
-  localStorage.setItem(UNLOCKED_KEY, JSON.stringify(Object.fromEntries(unlocked)));
+export async function saveUnlockedAchievements(unlocked: Map<string, string>): Promise<void> {
+  await AsyncStorage.setItem(UNLOCKED_KEY, JSON.stringify(Object.fromEntries(unlocked)));
 }

@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, ActivityIndicator } from "react-native";
 import { fetchBookCover, fetchBookByISBN } from "../store/books";
 import type { BookLog, EffortLevel } from "../store/books";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const EFFORT_META: Record<EffortLevel, { label: string; sublabel: string; icon: string; color: string; selected: string }> = {
-  easy:   { label: "Easy",   sublabel: "2–4 hrs",  icon: "🌱", color: "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300", selected: "ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-950" },
-  medium: { label: "Medium", sublabel: "~10 hrs",  icon: "🔥", color: "bg-amber-100   dark:bg-amber-900   text-amber-700   dark:text-amber-300",   selected: "ring-2 ring-amber-500   bg-amber-50   dark:bg-amber-950"   },
-  high:   { label: "High",   sublabel: "20+ hrs",  icon: "💀", color: "bg-red-100     dark:bg-red-900     text-red-700     dark:text-red-300",     selected: "ring-2 ring-red-500     bg-red-50     dark:bg-red-950"     },
+const EFFORT_META: Record<EffortLevel, { label: string; sublabel: string; icon: string; selectedRing: string; badgeBg: string; badgeText: string }> = {
+  easy:   { label: "Easy",   sublabel: "2–4 hrs",  icon: "🌱", selectedRing: "border-emerald-500 bg-emerald-50", badgeBg: "bg-emerald-100", badgeText: "text-emerald-700" },
+  medium: { label: "Medium", sublabel: "~10 hrs",  icon: "🔥", selectedRing: "border-amber-500   bg-amber-50",   badgeBg: "bg-amber-100",   badgeText: "text-amber-700"   },
+  high:   { label: "High",   sublabel: "20+ hrs",  icon: "💀", selectedRing: "border-red-500     bg-red-50",     badgeBg: "bg-red-100",     badgeText: "text-red-700"     },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ function AddForm({ onAdd }: AddFormProps) {
   const [effort, setEffort] = useState<EffortLevel>("medium");
   const [loading, setLoading] = useState(false);
 
-  async function handleIsbnBlur() {
+  async function handleIsbnLookup() {
     const clean = isbn.replace(/[\s-]/g, "");
     if (clean.length !== 10 && clean.length !== 13) return;
     setIsbnLoading(true);
@@ -60,15 +61,14 @@ function AddForm({ onAdd }: AddFormProps) {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     if (!title.trim()) return;
     setLoading(true);
 
     const coverUrl = prefetchedCover ?? await fetchBookCover(title.trim());
 
     const book: BookLog = {
-      id: crypto.randomUUID(),
+      id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       title: title.trim(),
       isbn: isbn.replace(/[\s-]/g, "") || undefined,
       finishedDate: date,
@@ -88,118 +88,103 @@ function AddForm({ onAdd }: AddFormProps) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 space-y-4"
-    >
-      <h2 className="text-sm font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wide">
+    <View className="bg-white rounded-2xl border border-gray-100 p-5 gap-y-4 shadow-sm">
+      <Text className="text-sm font-bold text-gray-700 uppercase tracking-wide">
         📚 Log a Book
-      </h2>
+      </Text>
 
       {/* ISBN */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">
-          ISBN <span className="font-normal text-gray-400 dark:text-slate-500">(optional — auto-fills title & cover)</span>
-        </label>
-        <div className="relative">
-          <input
-            type="text"
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-1">
+          ISBN <Text className="font-normal text-gray-400">(optional — auto-fills title & cover)</Text>
+        </Text>
+        <View className="flex-row gap-2">
+          <TextInput
             value={isbn}
-            onChange={(e) => { setIsbn(e.target.value); setPrefetchedCover(undefined); setIsbnError(false); }}
-            onBlur={handleIsbnBlur}
+            onChangeText={(v) => { setIsbn(v); setPrefetchedCover(undefined); setIsbnError(false); }}
             placeholder="e.g. 9780140449136"
-            inputMode="numeric"
-            className={`w-full px-3 py-2 text-sm rounded-xl border bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${
-              isbnError ? "border-red-400 dark:border-red-500" : "border-gray-200 dark:border-slate-600"
+            keyboardType="numeric"
+            className={`flex-1 px-3 py-2 text-sm rounded-xl border bg-gray-50 text-gray-800 ${
+              isbnError ? "border-red-400" : "border-gray-200"
             }`}
+            placeholderTextColor="#9ca3af"
           />
-          {isbnLoading && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm animate-spin">⏳</span>
-          )}
-          {prefetchedCover && !isbnLoading && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">✅</span>
-          )}
-        </div>
-        {isbnError && (
-          <p className="text-xs text-red-500 dark:text-red-400 mt-1">ISBN not found — enter title manually.</p>
-        )}
-      </div>
+          <TouchableOpacity
+            onPress={handleIsbnLookup}
+            disabled={isbnLoading}
+            className="px-3 py-2 bg-indigo-600 rounded-xl items-center justify-center"
+          >
+            {isbnLoading
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Text className="text-white text-xs font-medium">Look up</Text>
+            }
+          </TouchableOpacity>
+        </View>
+        {prefetchedCover && <Text className="text-xs text-emerald-600 mt-1">✅ Cover found</Text>}
+        {isbnError && <Text className="text-xs text-red-500 mt-1">ISBN not found — enter title manually.</Text>}
+      </View>
 
       {/* Title */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">
-          Book Title
-        </label>
-        <input
-          type="text"
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-1">Book Title</Text>
+        <TextInput
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChangeText={setTitle}
           placeholder="e.g. The Pragmatic Programmer"
-          required
-          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-gray-50 text-gray-800"
+          placeholderTextColor="#9ca3af"
         />
-      </div>
+      </View>
 
       {/* Finished Date */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">
-          Finished Date
-        </label>
-        <input
-          type="date"
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-1">Finished Date</Text>
+        <TextInput
           value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          onChangeText={setDate}
+          placeholder="YYYY-MM-DD"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-gray-50 text-gray-800"
+          placeholderTextColor="#9ca3af"
         />
-      </div>
+      </View>
 
-      {/* Effort — icon buttons */}
-      <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">
-          Effort
-        </label>
-        <div className="grid grid-cols-3 gap-2">
+      {/* Effort */}
+      <View>
+        <Text className="text-xs font-medium text-gray-500 mb-2">Effort</Text>
+        <View className="flex-row gap-2">
           {(Object.keys(EFFORT_META) as EffortLevel[]).map((lvl) => {
             const m = EFFORT_META[lvl];
             const active = effort === lvl;
             return (
-              <button
+              <TouchableOpacity
                 key={lvl}
-                type="button"
-                onClick={() => setEffort(lvl)}
-                className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all ${
-                  active
-                    ? `${m.selected} border-transparent`
-                    : "border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700"
+                onPress={() => setEffort(lvl)}
+                className={`flex-1 items-center gap-1 py-2.5 rounded-xl border-2 ${
+                  active ? m.selectedRing : "border-gray-200 bg-gray-50"
                 }`}
               >
-                <span className="text-xl">{m.icon}</span>
-                <span className={`text-xs font-semibold ${active ? "" : "text-gray-600 dark:text-slate-300"}`}>
-                  {m.label}
-                </span>
-                <span className="text-[10px] text-gray-400 dark:text-slate-500">{m.sublabel}</span>
-              </button>
+                <Text className="text-xl">{m.icon}</Text>
+                <Text className={`text-xs font-semibold ${active ? "" : "text-gray-600"}`}>{m.label}</Text>
+                <Text style={{ fontSize: 10 }} className="text-gray-400">{m.sublabel}</Text>
+              </TouchableOpacity>
             );
           })}
-        </div>
-      </div>
+        </View>
+      </View>
 
-      <button
-        type="submit"
+      <TouchableOpacity
+        onPress={handleSubmit}
         disabled={loading || !title.trim()}
-        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 dark:disabled:bg-indigo-800 text-white transition-colors flex items-center justify-center gap-2"
+        className={`w-full py-2.5 rounded-xl items-center flex-row justify-center gap-2 ${
+          loading || !title.trim() ? "bg-indigo-300" : "bg-indigo-600"
+        }`}
       >
-        {loading ? (
-          <>
-            <span className="animate-spin text-base">⏳</span>
-            Fetching cover…
-          </>
-        ) : (
-          "Add Book"
-        )}
-      </button>
-    </form>
+        {loading
+          ? <><ActivityIndicator size="small" color="#fff" /><Text className="text-white text-sm font-semibold"> Fetching cover…</Text></>
+          : <Text className="text-white text-sm font-semibold">Add Book</Text>
+        }
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -211,47 +196,42 @@ interface BookCardProps {
 }
 
 function BookCard({ book, onDelete }: BookCardProps) {
-  const { label, sublabel, color } = EFFORT_META[book.effort];
+  const { badgeBg, badgeText, label, sublabel } = EFFORT_META[book.effort];
+  const [imgError, setImgError] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
+    <View className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" style={{ width: "31%" }}>
       {/* Cover */}
-      <div className="aspect-[2/3] bg-gray-100 dark:bg-slate-800 flex items-center justify-center relative">
-        {book.coverUrl ? (
-          <img
-            src={book.coverUrl}
-            alt={book.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
+      <View className="bg-gray-100 items-center justify-center relative" style={{ aspectRatio: 2/3 }}>
+        {book.coverUrl && !imgError ? (
+          <Image
+            source={{ uri: book.coverUrl }}
+            className="w-full h-full"
+            resizeMode="cover"
+            onError={() => setImgError(true)}
           />
         ) : (
-          <span className="text-4xl select-none">📖</span>
+          <Text className="text-4xl">📖</Text>
         )}
-        {/* Delete button */}
-        <button
-          onClick={() => onDelete(book.id)}
-          title="Remove"
-          className="absolute top-1.5 right-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors"
+        <TouchableOpacity
+          onPress={() => onDelete(book.id)}
+          className="absolute top-1.5 right-1.5 bg-black/40 rounded-full w-6 h-6 items-center justify-center"
         >
-          ×
-        </button>
-      </div>
+          <Text className="text-white text-xs font-bold">×</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Info */}
-      <div className="p-3 flex flex-col gap-1.5 flex-1">
-        <p className="text-sm font-semibold text-gray-800 dark:text-slate-100 leading-snug line-clamp-2">
+      <View className="p-3 gap-y-1.5">
+        <Text className="text-sm font-semibold text-gray-800 leading-snug" numberOfLines={2}>
           {book.title}
-        </p>
-        <p className="text-xs text-gray-400 dark:text-slate-500">
-          {formatDate(book.finishedDate)}
-        </p>
-        <span className={`self-start mt-auto text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>
-          {label} · {sublabel}
-        </span>
-      </div>
-    </div>
+        </Text>
+        <Text className="text-xs text-gray-400">{formatDate(book.finishedDate)}</Text>
+        <View className={`self-start mt-1 px-2 py-0.5 rounded-full ${badgeBg}`}>
+          <Text className={`text-xs font-semibold ${badgeText}`}>{label} · {sublabel}</Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -273,15 +253,10 @@ export default function BooksView({ books, onAdd, onDelete }: BooksViewProps) {
     setYearFilter(getYear(book.finishedDate));
   }
 
-  function handleDelete(id: string) {
-    onDelete(id);
-  }
-
   const filtered = books
     .filter((b) => getYear(b.finishedDate) === yearFilter)
     .sort((a, b) => b.finishedDate.localeCompare(a.finishedDate));
 
-  // Stats
   const totalByEffort = {
     easy:   filtered.filter((b) => b.effort === "easy").length,
     medium: filtered.filter((b) => b.effort === "medium").length,
@@ -289,66 +264,68 @@ export default function BooksView({ books, onAdd, onDelete }: BooksViewProps) {
   };
 
   return (
-    <div className="space-y-5">
+    <View className="gap-y-5">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl p-5 text-white shadow-lg">
-        <p className="text-lg font-bold mb-1">📚 Books Read</p>
-        <p className="text-sm opacity-80 leading-relaxed">
+      <View className="bg-teal-600 rounded-2xl p-5 shadow-lg">
+        <Text className="text-lg font-bold text-white mb-1">📚 Books Read</Text>
+        <Text className="text-sm text-white/80 leading-relaxed">
           Track every book you finish. Covers are fetched automatically.
-        </p>
-      </div>
+        </Text>
+      </View>
 
       {/* Add form */}
       <AddForm onAdd={handleAdd} />
 
       {/* Year filter */}
       {years.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          {years.map((y) => (
-            <button
-              key={y}
-              onClick={() => setYearFilter(y)}
-              className={`px-3 py-1 text-sm rounded-full font-medium transition-colors ${
-                yearFilter === y
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
-              }`}
-            >
-              {y}
-            </button>
-          ))}
-        </div>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2">
+            {years.map((y) => (
+              <TouchableOpacity
+                key={y}
+                onPress={() => setYearFilter(y)}
+                className={`px-3 py-1 rounded-full ${
+                  yearFilter === y ? "bg-indigo-600" : "bg-gray-100"
+                }`}
+              >
+                <Text className={`text-sm font-medium ${yearFilter === y ? "text-white" : "text-gray-600"}`}>
+                  {y}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       )}
 
       {/* Summary row */}
       {filtered.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-700 p-3 text-center">
-            <p className="text-xl font-black text-gray-800 dark:text-slate-100">{filtered.length}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Total</p>
-          </div>
+        <View className="flex-row gap-3">
+          <View className="bg-white rounded-xl border border-gray-100 p-3 items-center flex-1">
+            <Text className="text-xl font-black text-gray-800">{filtered.length}</Text>
+            <Text className="text-xs text-gray-400 mt-0.5">Total</Text>
+          </View>
           {(["easy", "medium", "high"] as EffortLevel[]).map((lvl) => (
-            <div key={lvl} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-700 p-3 text-center">
-              <p className="text-xl font-black text-gray-800 dark:text-slate-100">{totalByEffort[lvl]}</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{EFFORT_META[lvl].label}</p>
-            </div>
+            <View key={lvl} className="bg-white rounded-xl border border-gray-100 p-3 items-center flex-1">
+              <Text className="text-xl font-black text-gray-800">{totalByEffort[lvl]}</Text>
+              <Text className="text-xs text-gray-400 mt-0.5">{EFFORT_META[lvl].label}</Text>
+            </View>
           ))}
-        </div>
+        </View>
       )}
 
       {/* Book grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-slate-500">
-          <p className="text-4xl mb-3">📖</p>
-          <p className="text-sm">No books logged for {yearFilter} yet.</p>
-        </div>
+        <View className="items-center py-16">
+          <Text className="text-4xl mb-3">📖</Text>
+          <Text className="text-sm text-gray-400">No books logged for {yearFilter} yet.</Text>
+        </View>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <View className="flex-row flex-wrap gap-3">
           {filtered.map((book) => (
-            <BookCard key={book.id} book={book} onDelete={handleDelete} />
+            <BookCard key={book.id} book={book} onDelete={onDelete} />
           ))}
-        </div>
+        </View>
       )}
-    </div>
+    </View>
   );
 }

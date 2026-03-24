@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export type EffortLevel = "easy" | "medium" | "high";
 
 export interface BookLog {
@@ -14,29 +16,29 @@ const BOOKS_KEY = "liferewards_books";
 
 // ─── Storage ──────────────────────────────────────────────────────────────────
 
-export function loadBooks(): BookLog[] {
+export async function loadBooks(): Promise<BookLog[]> {
   try {
-    const raw = localStorage.getItem(BOOKS_KEY);
+    const raw = await AsyncStorage.getItem(BOOKS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function saveBooks(books: BookLog[]): void {
-  localStorage.setItem(BOOKS_KEY, JSON.stringify(books));
+export async function saveBooks(books: BookLog[]): Promise<void> {
+  await AsyncStorage.setItem(BOOKS_KEY, JSON.stringify(books));
 }
 
-export function addBook(book: BookLog): BookLog[] {
-  const books = loadBooks();
+export async function addBook(book: BookLog): Promise<BookLog[]> {
+  const books = await loadBooks();
   books.push(book);
-  saveBooks(books);
+  await saveBooks(books);
   return books;
 }
 
-export function deleteBook(id: string): BookLog[] {
-  const books = loadBooks().filter((b) => b.id !== id);
-  saveBooks(books);
+export async function deleteBook(id: string): Promise<BookLog[]> {
+  const books = (await loadBooks()).filter((b) => b.id !== id);
+  await saveBooks(books);
   return books;
 }
 

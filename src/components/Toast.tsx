@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { View, Text, Animated } from "react-native";
 import type { Achievement } from "../types";
 
 interface ToastProps {
@@ -9,18 +10,32 @@ interface ToastProps {
 export default function Toast({ achievements, onDismiss }: ToastProps) {
   const [visible, setVisible] = useState(false);
   const [index, setIndex] = useState(0);
+  const opacity = useState(new Animated.Value(0))[0];
+  const translateY = useState(new Animated.Value(16))[0];
 
   useEffect(() => {
     if (achievements.length === 0) {
-      setVisible(false);
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 16, duration: 300, useNativeDriver: true }),
+      ]).start(() => setVisible(false));
       return;
     }
     setIndex(0);
     setVisible(true);
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start();
 
     const timer = setTimeout(() => {
-      setVisible(false);
-      setTimeout(onDismiss, 300);
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 16, duration: 300, useNativeDriver: true }),
+      ]).start(() => {
+        setVisible(false);
+        setTimeout(onDismiss, 300);
+      });
     }, 3000 + (achievements.length - 1) * 600);
 
     return () => clearTimeout(timer);
@@ -36,25 +51,31 @@ export default function Toast({ achievements, onDismiss }: ToastProps) {
   }, [visible, achievements.length]);
 
   const current = achievements[index];
-  if (!current) return null;
+  if (!current || !visible) return null;
 
   return (
-    <div
-      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      }`}
+    <Animated.View
+      style={{
+        position: "absolute",
+        bottom: 24,
+        left: 16,
+        right: 16,
+        zIndex: 50,
+        opacity,
+        transform: [{ translateY }],
+      }}
     >
-      <div className="bg-gray-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 min-w-64">
-        <span className="text-2xl">{current.icon}</span>
-        <div>
-          <p className="text-xs font-medium text-yellow-400 uppercase tracking-wide">Achievement Unlocked!</p>
-          <p className="text-sm font-bold">{current.title}</p>
-          <p className="text-xs text-gray-400 dark:text-slate-400">{current.description}</p>
-        </div>
+      <View className="bg-gray-900 px-5 py-3.5 rounded-2xl shadow-2xl flex-row items-center gap-3">
+        <Text className="text-2xl">{current.icon}</Text>
+        <View className="flex-1">
+          <Text className="text-xs font-medium text-yellow-400 uppercase tracking-wide">Achievement Unlocked!</Text>
+          <Text className="text-sm font-bold text-white">{current.title}</Text>
+          <Text className="text-xs text-gray-400">{current.description}</Text>
+        </View>
         {achievements.length > 1 && (
-          <span className="ml-auto text-xs text-gray-500">{index + 1}/{achievements.length}</span>
+          <Text className="text-xs text-gray-500">{index + 1}/{achievements.length}</Text>
         )}
-      </div>
-    </div>
+      </View>
+    </Animated.View>
   );
 }

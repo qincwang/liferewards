@@ -1,15 +1,16 @@
 import { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import type { Achievement, AchievementTier, Category } from "../types";
 
 interface AchievementsViewProps {
   achievements: Achievement[];
 }
 
-const TIER_STYLES: Record<AchievementTier, { label: string; badge: string; ring: string; glow: string }> = {
-  bronze:   { label: "Bronze",   badge: "bg-amber-100  text-amber-700  border-amber-300",  ring: "border-amber-400",  glow: "" },
-  silver:   { label: "Silver",   badge: "bg-slate-100  text-slate-600  border-slate-300",  ring: "border-slate-400",  glow: "" },
-  gold:     { label: "Gold",     badge: "bg-yellow-100 text-yellow-700 border-yellow-400", ring: "border-yellow-400", glow: "shadow-sm shadow-yellow-100" },
-  platinum: { label: "Platinum", badge: "bg-purple-100 text-purple-700 border-purple-400", ring: "border-purple-500", glow: "shadow-md shadow-purple-100" },
+const TIER_STYLES: Record<AchievementTier, { label: string; ringColor: string; badgeBg: string; badgeText: string }> = {
+  bronze:   { label: "Bronze",   ringColor: "border-amber-400",  badgeBg: "bg-amber-100",  badgeText: "text-amber-700"  },
+  silver:   { label: "Silver",   ringColor: "border-slate-400",  badgeBg: "bg-slate-100",  badgeText: "text-slate-600"  },
+  gold:     { label: "Gold",     ringColor: "border-yellow-400", badgeBg: "bg-yellow-100", badgeText: "text-yellow-700" },
+  platinum: { label: "Platinum", ringColor: "border-purple-500", badgeBg: "bg-purple-100", badgeText: "text-purple-700" },
 };
 
 const FILTER_OPTIONS = [
@@ -55,87 +56,97 @@ export default function AchievementsView({ achievements }: AchievementsViewProps
     unlocked: achievements.filter((a) => a.tier === tier && !!a.unlockedAt).length,
   }));
 
+  const progressPct = achievements.length > 0 ? (unlockedCount / achievements.length) * 100 : 0;
+
   return (
-    <div className="space-y-4">
+    <View className="gap-y-4">
       {/* Header */}
-      <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
-        <p className="text-sm opacity-80 mb-1">Achievements</p>
-        <p className="text-4xl font-bold">
+      <View className="bg-purple-600 rounded-2xl p-5 shadow-lg">
+        <Text className="text-sm text-white opacity-80 mb-1">Achievements</Text>
+        <Text className="text-4xl font-bold text-white">
           {unlockedCount}
-          <span className="text-xl font-normal opacity-70"> / {achievements.length}</span>
-        </p>
-        <div className="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-white rounded-full transition-all duration-700"
-            style={{ width: `${achievements.length > 0 ? (unlockedCount / achievements.length) * 100 : 0}%` }}
+          <Text className="text-xl font-normal opacity-70"> / {achievements.length}</Text>
+        </Text>
+        <View className="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
+          <View
+            className="h-full bg-white rounded-full"
+            style={{ width: `${progressPct}%` }}
           />
-        </div>
+        </View>
         {/* Tier breakdown */}
-        <div className="mt-3 grid grid-cols-4 gap-2">
+        <View className="mt-3 flex-row">
           {tierCounts.map(({ tier, total, unlocked }) => (
-            <div key={tier} className="text-center">
-              <p className="text-xs opacity-60 capitalize">{tier}</p>
-              <p className="text-sm font-semibold">{unlocked}<span className="opacity-50 font-normal">/{total}</span></p>
-            </div>
+            <View key={tier} className="flex-1 items-center">
+              <Text className="text-xs text-white/60 capitalize">{tier}</Text>
+              <Text className="text-sm font-semibold text-white">
+                {unlocked}<Text className="text-white/50 font-normal">/{total}</Text>
+              </Text>
+            </View>
           ))}
-        </div>
-      </div>
+        </View>
+      </View>
 
       {/* Filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        {FILTER_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setFilter(opt.value)}
-            className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap border transition-all ${
-              filter === opt.value
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-row gap-2 pb-1">
+          {FILTER_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              onPress={() => setFilter(opt.value)}
+              className={`px-3 py-1.5 rounded-full border ${
+                filter === opt.value
+                  ? "bg-indigo-600 border-indigo-600"
+                  : "bg-white border-gray-200"
+              }`}
+            >
+              <Text className={`text-xs ${filter === opt.value ? "text-white" : "text-gray-600"}`}>
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
 
       {/* Badge grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <View className="flex-row flex-wrap gap-3">
         {filtered.map((a) => {
           const tier = TIER_STYLES[a.tier];
           return (
-            <div
+            <View
               key={a.id}
-              className={`rounded-xl p-4 border-2 transition-all ${
+              className={`rounded-xl p-4 border-2 w-[47%] ${
                 a.unlockedAt
-                  ? `bg-white dark:bg-slate-900 ${tier.ring} ${tier.glow}`
-                  : "bg-gray-50 dark:bg-slate-800 border-gray-100 dark:border-slate-700 opacity-40"
+                  ? `bg-white ${tier.ringColor}`
+                  : "bg-gray-50 border-gray-100 opacity-40"
               }`}
             >
               {/* Tier badge */}
-              <div className="flex items-start justify-between mb-2">
-                <div className={`text-3xl ${a.unlockedAt ? "" : "grayscale"}`}>{a.icon}</div>
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border capitalize ${tier.badge}`}>
-                  {tier.label}
-                </span>
-              </div>
-              <p className={`text-sm font-semibold ${a.unlockedAt ? "text-gray-800 dark:text-slate-100" : "text-gray-400 dark:text-slate-600"}`}>
+              <View className="flex-row items-start justify-between mb-2">
+                <Text className="text-3xl">{a.icon}</Text>
+                <View className={`px-1.5 py-0.5 rounded-full border ${tier.badgeBg} border-transparent`}>
+                  <Text className={`text-[10px] font-semibold capitalize ${tier.badgeText}`}>
+                    {tier.label}
+                  </Text>
+                </View>
+              </View>
+              <Text className={`text-sm font-semibold ${a.unlockedAt ? "text-gray-800" : "text-gray-400"}`}>
                 {a.title}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 leading-tight">{a.description}</p>
+              </Text>
+              <Text className="text-xs text-gray-400 mt-0.5 leading-tight">{a.description}</Text>
               {a.unlockedAt && (
-                <p className="text-xs text-indigo-500 mt-1.5 font-medium">✓ {formatDate(a.unlockedAt)}</p>
+                <Text className="text-xs text-indigo-500 mt-1.5 font-medium">✓ {formatDate(a.unlockedAt)}</Text>
               )}
-            </div>
+            </View>
           );
         })}
-      </div>
+      </View>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 text-gray-400 dark:text-slate-500">
-          <p className="text-4xl mb-2">🔒</p>
-          <p className="text-sm">No achievements here yet</p>
-        </div>
+        <View className="items-center py-12">
+          <Text className="text-4xl mb-2">🔒</Text>
+          <Text className="text-sm text-gray-400">No achievements here yet</Text>
+        </View>
       )}
-    </div>
+    </View>
   );
 }

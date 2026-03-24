@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export type PieceDifficulty = "beginner" | "intermediate" | "advanced";
 export type PieceInstrument = "electric_guitar" | "classical_guitar" | "drums" | "piano" | "other";
 
@@ -14,29 +16,29 @@ export interface PieceLog {
 
 const PIECES_KEY = "liferewards_pieces";
 
-export function loadPieces(): PieceLog[] {
+export async function loadPieces(): Promise<PieceLog[]> {
   try {
-    const raw = localStorage.getItem(PIECES_KEY);
+    const raw = await AsyncStorage.getItem(PIECES_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function savePieces(pieces: PieceLog[]): void {
-  localStorage.setItem(PIECES_KEY, JSON.stringify(pieces));
+export async function savePieces(pieces: PieceLog[]): Promise<void> {
+  await AsyncStorage.setItem(PIECES_KEY, JSON.stringify(pieces));
 }
 
-export function addPiece(piece: PieceLog): PieceLog[] {
-  const pieces = loadPieces();
+export async function addPiece(piece: PieceLog): Promise<PieceLog[]> {
+  const pieces = await loadPieces();
   pieces.push(piece);
-  savePieces(pieces);
+  await savePieces(pieces);
   return pieces;
 }
 
-export function deletePiece(id: string): PieceLog[] {
-  const pieces = loadPieces().filter((p) => p.id !== id);
-  savePieces(pieces);
+export async function deletePiece(id: string): Promise<PieceLog[]> {
+  const pieces = (await loadPieces()).filter((p) => p.id !== id);
+  await savePieces(pieces);
   return pieces;
 }
 

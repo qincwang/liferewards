@@ -1,3 +1,4 @@
+import { View, Text } from "react-native";
 import type { LogEntry } from "../types";
 import {
   computeDailyScore,
@@ -38,75 +39,79 @@ export default function Dashboard({ entries }: DashboardProps) {
   const weeklyRating = computeWeeklyRating(entries);
 
   return (
-    <div className="space-y-4">
-      {/* Daily classic passage */}
+    <View className="gap-y-4">
       <DailyPassage />
 
-      {/* Weekly Rating */}
       <WeeklyRatingCard weeklyRating={weeklyRating} />
 
       {/* Today's total */}
-      <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-        <div className="text-sm opacity-80 mb-1">Today's Score</div>
-        <div className="text-5xl font-bold mb-2">{todayScore.totalScore}</div>
+      <View className="bg-indigo-600 rounded-2xl p-6 shadow-lg">
+        <Text className="text-sm text-white opacity-80 mb-1">Today's Score</Text>
+        <Text className="text-5xl font-bold text-white mb-2">{todayScore.totalScore}</Text>
         {todayScore.hasBalanceBonus && (
-          <div className="text-sm bg-white/20 inline-block px-3 py-1 rounded-full mb-2">
-            +50 Balance Bonus!
-          </div>
+          <View className="bg-white/20 self-start px-3 py-1 rounded-full mb-2">
+            <Text className="text-sm text-white">+50 Balance Bonus!</Text>
+          </View>
         )}
-        <div className="text-sm opacity-90">{getMotivation(todayScore.totalScore)}</div>
-      </div>
+        <Text className="text-sm text-white opacity-90">{getMotivation(todayScore.totalScore)}</Text>
+      </View>
 
       {/* Per-category scores — top 3 */}
-      <div className="grid grid-cols-3 gap-3">
+      <View className="flex-row gap-3">
         {(["workout", "work", "reading"] as const).map((cat) => (
-          <ScoreCard
-            key={cat}
-            category={cat}
-            score={todayScore.categoryScores[cat]}
-            streak={todayScore.streaks[cat]}
-          />
+          <View key={cat} className="flex-1">
+            <ScoreCard
+              category={cat}
+              score={todayScore.categoryScores[cat]}
+              streak={todayScore.streaks[cat]}
+            />
+          </View>
         ))}
-      </div>
+      </View>
 
       {/* Music + Habits */}
-      <div className="grid grid-cols-2 gap-3">
+      <View className="flex-row gap-3">
         {(["music", "habits"] as const).map((cat) => (
-          <ScoreCard
-            key={cat}
-            category={cat}
-            score={todayScore.categoryScores[cat]}
-            streak={todayScore.streaks[cat]}
-          />
+          <View key={cat} className="flex-1">
+            <ScoreCard
+              category={cat}
+              score={todayScore.categoryScores[cat]}
+              streak={todayScore.streaks[cat]}
+            />
+          </View>
         ))}
-      </div>
+      </View>
 
       {/* Weekly chart */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-        <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-400 mb-4">Last 7 Days</h3>
-        <div className="flex items-end justify-between gap-2 h-32">
+      <View className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <Text className="text-sm font-semibold text-gray-600 mb-4">Last 7 Days</Text>
+        <View className="flex-row items-end justify-between gap-2" style={{ height: 128 }}>
           {weekScores.map((score) => {
             const height = maxWeekScore > 0 ? (score.totalScore / maxWeekScore) * 100 : 0;
             const isToday = score.date === today;
+            const barHeight = Math.max((height / 100) * 96, 4);
+            const dayOfWeek = new Date(score.date + "T00:00:00").getDay();
+            const dayLabel = WEEKDAYS[dayOfWeek === 0 ? 6 : dayOfWeek - 1];
+
             return (
-              <div key={score.date} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs text-gray-500 dark:text-slate-500 font-medium">
+              <View key={score.date} className="flex-1 items-center gap-1">
+                <Text className="text-xs text-gray-500 font-medium">
                   {score.totalScore > 0 ? score.totalScore : ""}
-                </span>
-                <div
-                  className={`w-full rounded-t-md transition-all duration-500 ${
-                    isToday ? "bg-indigo-500" : "bg-indigo-200 dark:bg-indigo-800"
-                  }`}
-                  style={{ height: `${Math.max(height, 4)}%` }}
-                />
-                <span className={`text-xs ${isToday ? "font-bold text-indigo-600" : "text-gray-400 dark:text-slate-500"}`}>
-                  {WEEKDAYS[new Date(score.date + "T00:00:00").getDay() === 0 ? 6 : new Date(score.date + "T00:00:00").getDay() - 1]}
-                </span>
-              </div>
+                </Text>
+                <View className="flex-1 w-full justify-end">
+                  <View
+                    className={`w-full rounded-t-md ${isToday ? "bg-indigo-500" : "bg-indigo-200"}`}
+                    style={{ height: barHeight }}
+                  />
+                </View>
+                <Text className={`text-xs ${isToday ? "font-bold text-indigo-600" : "text-gray-400"}`}>
+                  {dayLabel}
+                </Text>
+              </View>
             );
           })}
-        </div>
-      </div>
-    </div>
+        </View>
+      </View>
+    </View>
   );
 }

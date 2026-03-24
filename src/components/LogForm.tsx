@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { View, Text, TouchableOpacity, TextInput, ScrollView } from "react-native";
 import type { MealType } from "../types";
 import { ACTIVITIES, ACTIVITIES_BY_CATEGORY } from "../engine/activities";
 import type { ActivityDefinition } from "../engine/activities";
@@ -65,8 +66,7 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
     setTimeout(() => setShowSuccess(false), 1500);
   }
 
-  function handleActivitySubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleActivitySubmit() {
     const mins = parseInt(duration, 10);
     if (!mins || mins <= 0) return;
     onLog(selectedActivity.id, mins, undefined, note || undefined, logDate);
@@ -96,204 +96,232 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-      {/* Header row: title + day toggle + mode toggle */}
-      <div className="flex items-center justify-between mb-4 gap-2">
-        <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-lg p-1 shrink-0">
-          <button
-            onClick={() => setDayOffset("today")}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all ${
-              dayOffset === "today"
-                ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
-                : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+    <View className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+      {/* Header row: day toggle + mode toggle */}
+      <View className="flex-row items-center justify-between mb-4 gap-2">
+        <View className="flex-row gap-1 bg-gray-100 rounded-lg p-1">
+          <TouchableOpacity
+            onPress={() => setDayOffset("today")}
+            className={`px-2.5 py-1 rounded-md ${
+              dayOffset === "today" ? "bg-white shadow-sm" : ""
             }`}
           >
-            Today
-          </button>
-          <button
-            onClick={() => setDayOffset("yesterday")}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all ${
-              dayOffset === "yesterday"
-                ? "bg-white dark:bg-slate-700 text-amber-700 shadow-sm font-medium"
-                : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+            <Text className={`text-xs ${dayOffset === "today" ? "text-gray-800 font-medium" : "text-gray-500"}`}>
+              Today
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setDayOffset("yesterday")}
+            className={`px-2.5 py-1 rounded-md ${
+              dayOffset === "yesterday" ? "bg-white shadow-sm" : ""
             }`}
           >
-            Yesterday
-          </button>
-        </div>
+            <Text className={`text-xs ${dayOffset === "yesterday" ? "text-amber-700 font-medium" : "text-gray-500"}`}>
+              Yesterday
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-lg p-1 shrink-0">
-          <button
-            onClick={() => setMode("activity")}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all ${
-              mode === "activity"
-                ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
-                : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+        <View className="flex-row gap-1 bg-gray-100 rounded-lg p-1">
+          <TouchableOpacity
+            onPress={() => setMode("activity")}
+            className={`px-2.5 py-1 rounded-md ${
+              mode === "activity" ? "bg-white shadow-sm" : ""
             }`}
           >
-            Activity
-          </button>
-          <button
-            onClick={() => setMode("habits")}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all ${
-              mode === "habits"
-                ? "bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 shadow-sm font-medium"
-                : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+            <Text className={`text-xs ${mode === "activity" ? "text-gray-800 font-medium" : "text-gray-500"}`}>
+              Activity
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setMode("habits")}
+            className={`px-2.5 py-1 rounded-md ${
+              mode === "habits" ? "bg-white shadow-sm" : ""
             }`}
           >
-            🌟 Habits
-          </button>
-        </div>
-      </div>
+            <Text className={`text-xs ${mode === "habits" ? "text-gray-800 font-medium" : "text-gray-500"}`}>
+              🌟 Habits
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {dayOffset === "yesterday" && (
-        <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-1.5 mb-3">
-          Logging for yesterday
-        </div>
+        <View className="bg-amber-50 rounded-lg px-3 py-1.5 mb-3">
+          <Text className="text-xs text-amber-600">Logging for yesterday</Text>
+        </View>
       )}
 
       {mode === "activity" ? (
-        <>
+        <View>
           {/* Quick log */}
-          <div className="flex flex-wrap gap-2 mb-5">
-            {QUICK_OPTIONS.map((opt) => (
-              <button
-                key={opt.activityId + opt.duration}
-                onClick={() => handleQuickLog(opt.activityId, opt.duration)}
-                className="px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg border border-gray-200 dark:border-slate-600 dark:text-slate-300 transition-colors"
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleActivitySubmit} className="space-y-4">
-            {/* Category picker */}
-            <div className="grid grid-cols-4 gap-1.5">
-              {DURATION_CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => handleCategoryChange(cat)}
-                  className={`py-2 px-1 rounded-lg text-xs font-medium transition-all ${
-                    selectedCategory === cat
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-                  }`}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
+            <View className="flex-row gap-2">
+              {QUICK_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.activityId + opt.duration}
+                  onPress={() => handleQuickLog(opt.activityId, opt.duration)}
+                  className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
                 >
-                  {CATEGORY_LABELS[cat]}
-                </button>
+                  <Text className="text-sm text-gray-700">{opt.label}</Text>
+                </TouchableOpacity>
               ))}
-            </div>
+            </View>
+          </ScrollView>
 
-            {/* Activity picker */}
-            {categoryActivities.length > 1 && (
-              <div className="flex flex-wrap gap-2">
+          {/* Category picker */}
+          <View className="flex-row gap-1.5 mb-4">
+            {DURATION_CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                onPress={() => handleCategoryChange(cat)}
+                className={`flex-1 py-2 px-1 rounded-lg ${
+                  selectedCategory === cat
+                    ? "bg-indigo-600"
+                    : "bg-gray-50 border border-gray-200"
+                }`}
+              >
+                <Text className={`text-xs font-medium text-center ${
+                  selectedCategory === cat ? "text-white" : "text-gray-600"
+                }`}>
+                  {CATEGORY_LABELS[cat]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Activity picker */}
+          {categoryActivities.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+              <View className="flex-row gap-2">
                 {categoryActivities.map((act) => (
-                  <button
+                  <TouchableOpacity
                     key={act.id}
-                    type="button"
-                    onClick={() => setSelectedActivity(act)}
-                    className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
+                    onPress={() => setSelectedActivity(act)}
+                    className={`px-3 py-1.5 rounded-lg border ${
                       selectedActivity.id === act.id
-                        ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300 font-medium"
-                        : "bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                        ? "bg-indigo-50 border-indigo-300"
+                        : "bg-gray-50 border-gray-200"
                     }`}
                   >
-                    {act.label}
-                  </button>
+                    <Text className={`text-sm ${
+                      selectedActivity.id === act.id
+                        ? "text-indigo-700 font-medium"
+                        : "text-gray-600"
+                    }`}>
+                      {act.label}
+                    </Text>
+                  </TouchableOpacity>
                 ))}
-              </div>
-            )}
+              </View>
+            </ScrollView>
+          )}
 
-            {/* Duration + note */}
-            <div className="flex gap-3">
-              <input
-                type="number"
-                placeholder="Minutes"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                min="1"
-                max="480"
-                className="flex-1 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-              />
-              <input
-                type="text"
-                placeholder="Note (optional)"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="flex-2 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-              />
-            </div>
+          {/* Duration + note */}
+          <View className="flex-row gap-3 mb-4">
+            <TextInput
+              placeholder="Minutes"
+              value={duration}
+              onChangeText={setDuration}
+              keyboardType="numeric"
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-gray-800 bg-white"
+              placeholderTextColor="#9ca3af"
+            />
+            <TextInput
+              placeholder="Note (optional)"
+              value={note}
+              onChangeText={setNote}
+              className="flex-[2] px-4 py-2 border border-gray-200 rounded-lg text-gray-800 bg-white"
+              placeholderTextColor="#9ca3af"
+            />
+          </View>
 
-            <button
-              type="submit"
-              className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-            >
+          <TouchableOpacity
+            onPress={handleActivitySubmit}
+            className="w-full py-2.5 bg-indigo-600 rounded-lg items-center"
+            activeOpacity={0.8}
+          >
+            <Text className="text-white font-medium">
               {showSuccess ? "✓ Logged!" : `Log ${selectedActivity.label}`}
-            </button>
-          </form>
-        </>
+            </Text>
+          </TouchableOpacity>
+        </View>
       ) : (
-        <div className="space-y-4">
+        <View className="gap-y-4">
           {/* Wake / Sleep */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleHabitLog("get_up")}
-              className="flex-1 py-3 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm font-medium text-amber-800 dark:text-amber-400 transition-colors"
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => handleHabitLog("get_up")}
+              className="flex-1 py-3 bg-amber-50 border border-amber-200 rounded-xl items-center"
+              activeOpacity={0.8}
             >
-              🌅 Got Up at 9
-              <span className="block text-xs text-amber-600 mt-0.5">+30 pts</span>
-            </button>
-            <button
-              onClick={() => handleHabitLog("sleep")}
-              className="flex-1 py-3 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-100/5 border border-indigo-200 dark:border-indigo-800 rounded-xl text-sm font-medium text-indigo-800 dark:text-indigo-400 transition-colors"
+              <Text className="text-sm font-medium text-amber-800">🌅 Got Up at 9</Text>
+              <Text className="text-xs text-amber-600 mt-0.5">+30 pts</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleHabitLog("sleep")}
+              className="flex-1 py-3 bg-indigo-50 border border-indigo-200 rounded-xl items-center"
+              activeOpacity={0.8}
             >
-              🌙 Sleep at 12:30
-              <span className="block text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">+20 pts</span>
-            </button>
-          </div>
+              <Text className="text-sm font-medium text-indigo-800">🌙 Sleep at 12:30</Text>
+              <Text className="text-xs text-indigo-600 mt-0.5">+20 pts</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Meals */}
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-slate-300 mb-2">Log a Meal</p>
-            <div className="flex gap-2 mb-3">
-              {MEAL_OPTIONS.map((opt) => (
-                <button
-                  key={opt.type}
-                  onClick={() => setMealType(opt.type)}
-                  className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    mealType === opt.type
-                      ? opt.type === "clean"
-                        ? "bg-emerald-500 border-emerald-500 text-white"
-                        : opt.type === "heavy"
-                        ? "bg-red-500 border-red-500 text-white"
-                        : "bg-gray-500 border-gray-500 text-white"
-                      : "bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-                  }`}
-                >
-                  <span className="block text-base">{opt.emoji}</span>
-                  {opt.label}
-                  <span className="block text-xs mt-0.5 opacity-80">{opt.pts}</span>
-                </button>
-              ))}
-            </div>
+          <View>
+            <Text className="text-sm font-medium text-gray-600 mb-2">Log a Meal</Text>
+            <View className="flex-row gap-2 mb-3">
+              {MEAL_OPTIONS.map((opt) => {
+                const isSelected = mealType === opt.type;
+                const selectedBg =
+                  opt.type === "clean"
+                    ? "bg-emerald-500"
+                    : opt.type === "heavy"
+                    ? "bg-red-500"
+                    : "bg-gray-500";
+                return (
+                  <TouchableOpacity
+                    key={opt.type}
+                    onPress={() => setMealType(opt.type)}
+                    className={`flex-1 py-2.5 rounded-xl border items-center ${
+                      isSelected
+                        ? `${selectedBg} border-transparent`
+                        : "bg-gray-50 border-gray-200"
+                    }`}
+                  >
+                    <Text className="text-base">{opt.emoji}</Text>
+                    <Text className={`text-sm font-medium mt-0.5 ${isSelected ? "text-white" : "text-gray-600"}`}>
+                      {opt.label}
+                    </Text>
+                    <Text className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-gray-400"}`}>
+                      {opt.pts}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             {mealType === "heavy" && weekHeavyMeals >= 2 && (
-              <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 mb-3">
-                ⚠️ This is your {weekHeavyMeals + 1}{weekHeavyMeals + 1 === 3 ? "rd" : "th"} heavy meal this week — penalty applies (-20 pts)
-              </div>
+              <View className="bg-red-50 rounded-lg px-3 py-2 mb-3">
+                <Text className="text-xs text-red-600">
+                  ⚠️ This is your {weekHeavyMeals + 1}{weekHeavyMeals + 1 === 3 ? "rd" : "th"} heavy meal this week — penalty applies (-20 pts)
+                </Text>
+              </View>
             )}
 
-            <button
-              onClick={() => handleHabitLog("meal", mealType)}
-              className="w-full py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors"
+            <TouchableOpacity
+              onPress={() => handleHabitLog("meal", mealType)}
+              className="w-full py-2.5 bg-pink-600 rounded-lg items-center"
+              activeOpacity={0.8}
             >
-              {showSuccess ? "✓ Logged!" : "Log Meal"}
-            </button>
-          </div>
-        </div>
+              <Text className="text-white font-medium">
+                {showSuccess ? "✓ Logged!" : "Log Meal"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
-    </div>
+    </View>
   );
 }

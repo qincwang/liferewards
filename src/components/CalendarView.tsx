@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import type { LogEntry } from "../types";
 import { CATEGORY_ICONS } from "../types";
 import { computeScores, toDateStr } from "../engine/scoring";
@@ -9,17 +10,17 @@ interface CalendarViewProps {
 }
 
 // ─── Color scale by daily pts ────────────────────────────────────────────────
-function heatColor(pts: number): string {
-  if (pts === 0)    return "bg-gray-100 dark:bg-slate-800";
-  if (pts < 200)    return "bg-indigo-100 dark:bg-indigo-950";
-  if (pts < 500)    return "bg-indigo-300 dark:bg-indigo-800";
-  if (pts < 1000)   return "bg-indigo-500 dark:bg-indigo-600";
-  return "bg-indigo-700 dark:bg-indigo-500";
+function heatBg(pts: number): string {
+  if (pts === 0)    return "bg-gray-100";
+  if (pts < 200)    return "bg-indigo-100";
+  if (pts < 500)    return "bg-indigo-300";
+  if (pts < 1000)   return "bg-indigo-500";
+  return "bg-indigo-700";
 }
 
-function heatTextColor(pts: number): string {
-  if (pts === 0)  return "text-gray-300 dark:text-slate-600";
-  if (pts < 500)  return "text-indigo-700 dark:text-indigo-300";
+function heatText(pts: number): string {
+  if (pts === 0)  return "text-gray-300";
+  if (pts < 500)  return "text-indigo-700";
   return "text-white";
 }
 
@@ -27,13 +28,11 @@ function heatTextColor(pts: number): string {
 function monthDates(year: number, month: number): (string | null)[] {
   const first = new Date(year, month, 1);
   const last  = new Date(year, month + 1, 0);
-  // Monday-aligned grid
-  const startPad = (first.getDay() + 6) % 7; // 0=Mon
+  const startPad = (first.getDay() + 6) % 7;
   const cells: (string | null)[] = Array(startPad).fill(null);
   for (let d = 1; d <= last.getDate(); d++) {
     cells.push(toDateStr(new Date(year, month, d)));
   }
-  // Fill to complete last row
   while (cells.length % 7 !== 0) cells.push(null);
   return cells;
 }
@@ -75,7 +74,6 @@ export default function CalendarView({ entries }: CalendarViewProps) {
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth());
   const [selected, setSelected]   = useState<string | null>(today);
 
-  // Compute scores for month + heatmap dates in one pass
   const heatDates   = useMemo(() => last90Dates(), []);
   const calDates    = useMemo(() => monthDates(viewYear, viewMonth).filter(Boolean) as string[], [viewYear, viewMonth]);
   const allDates    = useMemo(() => [...new Set([...heatDates, ...calDates])], [heatDates, calDates]);
@@ -91,7 +89,6 @@ export default function CalendarView({ entries }: CalendarViewProps) {
   );
   const selectedScore = selected ? (scoreMap.get(selected) ?? 0) : 0;
 
-  // Month navigation
   function prevMonth() {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
     else setViewMonth(m => m - 1);
@@ -107,161 +104,171 @@ export default function CalendarView({ entries }: CalendarViewProps) {
   const isNextDisabled = viewYear > todayDate.getFullYear() ||
     (viewYear === todayDate.getFullYear() && viewMonth >= todayDate.getMonth());
 
-  // Heatmap: group into week columns
-  // Pad start so first date falls on correct weekday
+  // Heatmap setup
   const heatStart = new Date(heatDates[0] + "T00:00:00");
-  const heatStartPad = (heatStart.getDay() + 6) % 7; // Mon=0
+  const heatStartPad = (heatStart.getDay() + 6) % 7;
   const paddedHeat: (string | null)[] = [...Array(heatStartPad).fill(null), ...heatDates];
   while (paddedHeat.length % 7 !== 0) paddedHeat.push(null);
-  // Split into weeks (columns)
   const weeks: (string | null)[][] = [];
   for (let i = 0; i < paddedHeat.length; i += 7) {
     weeks.push(paddedHeat.slice(i, i + 7));
   }
 
+  const CELL_SIZE = 14;
+  const CELL_GAP = 2;
+
   return (
-    <div className="space-y-5">
+    <View className="gap-y-5">
 
       {/* ── Heatmap ─────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5">
-        <h3 className="text-sm font-semibold text-gray-600 dark:text-slate-400 mb-3">90-Day Heatmap</h3>
+      <View className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <Text className="text-sm font-semibold text-gray-600 mb-3">90-Day Heatmap</Text>
 
-        <div className="flex gap-0.5 overflow-x-auto pb-1">
-          {/* Day labels */}
-          <div className="flex flex-col gap-0.5 mr-1 shrink-0">
-            {DAY_LABELS.map((d) => (
-              <div key={d} className="h-3.5 flex items-center text-[9px] text-gray-400 dark:text-slate-500 w-6">{d}</div>
-            ))}
-          </div>
-
-          {/* Week columns */}
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-0.5 shrink-0">
-              {week.map((date, di) => (
-                <button
-                  key={di}
-                  onClick={() => date && setSelected(date)}
-                  title={date ? `${date}: ${scoreMap.get(date) ?? 0} pts` : ""}
-                  className={`w-3.5 h-3.5 rounded-sm transition-all ${
-                    date
-                      ? `${heatColor(scoreMap.get(date) ?? 0)} ${selected === date ? "ring-1 ring-indigo-500 ring-offset-1" : "hover:opacity-80"}`
-                      : "bg-transparent"
-                  }`}
-                />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row">
+            {/* Day labels */}
+            <View className="mr-1" style={{ gap: CELL_GAP }}>
+              {DAY_LABELS.map((d) => (
+                <View key={d} style={{ height: CELL_SIZE, justifyContent: "center" }}>
+                  <Text style={{ fontSize: 9 }} className="text-gray-400 w-6">{d}</Text>
+                </View>
               ))}
-            </div>
-          ))}
-        </div>
+            </View>
+
+            {/* Week columns */}
+            {weeks.map((week, wi) => (
+              <View key={wi} className="mr-0.5" style={{ gap: CELL_GAP }}>
+                {week.map((date, di) => (
+                  <TouchableOpacity
+                    key={di}
+                    onPress={() => date && setSelected(date)}
+                    disabled={!date}
+                    style={{
+                      width: CELL_SIZE,
+                      height: CELL_SIZE,
+                      borderRadius: 2,
+                      borderWidth: selected === date ? 1 : 0,
+                      borderColor: selected === date ? "#6366f1" : "transparent",
+                    }}
+                    className={date ? heatBg(scoreMap.get(date) ?? 0) : "bg-transparent"}
+                  />
+                ))}
+              </View>
+            ))}
+          </View>
+        </ScrollView>
 
         {/* Legend */}
-        <div className="flex items-center gap-1.5 mt-2">
-          <span className="text-[10px] text-gray-400 dark:text-slate-500">Less</span>
-          {["bg-gray-100 dark:bg-slate-800","bg-indigo-100 dark:bg-indigo-950","bg-indigo-300 dark:bg-indigo-800","bg-indigo-500 dark:bg-indigo-600","bg-indigo-700 dark:bg-indigo-500"].map((c) => (
-            <div key={c} className={`w-3 h-3 rounded-sm ${c}`} />
+        <View className="flex-row items-center gap-1.5 mt-2">
+          <Text style={{ fontSize: 10 }} className="text-gray-400">Less</Text>
+          {["bg-gray-100","bg-indigo-100","bg-indigo-300","bg-indigo-500","bg-indigo-700"].map((c) => (
+            <View key={c} style={{ width: 12, height: 12, borderRadius: 2 }} className={c} />
           ))}
-          <span className="text-[10px] text-gray-400 dark:text-slate-500">More</span>
-        </div>
-      </div>
+          <Text style={{ fontSize: 10 }} className="text-gray-400">More</Text>
+        </View>
+      </View>
 
       {/* ── Month Calendar ───────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5">
+      <View className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={prevMonth}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-400 transition-colors"
-          >
-            ‹
-          </button>
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">
+        <View className="flex-row items-center justify-between mb-4">
+          <TouchableOpacity onPress={prevMonth} className="p-1.5 rounded-lg">
+            <Text className="text-gray-500 text-lg">‹</Text>
+          </TouchableOpacity>
+          <Text className="text-sm font-semibold text-gray-800">
             {MONTH_NAMES[viewMonth]} {viewYear}
-          </h3>
-          <button
-            onClick={nextMonth}
+          </Text>
+          <TouchableOpacity
+            onPress={nextMonth}
             disabled={isNextDisabled}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className={`p-1.5 rounded-lg ${isNextDisabled ? "opacity-30" : ""}`}
           >
-            ›
-          </button>
-        </div>
+            <Text className="text-gray-500 text-lg">›</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Day-of-week headers */}
-        <div className="grid grid-cols-7 mb-1">
+        <View className="flex-row mb-1">
           {DAY_LABELS.map((d) => (
-            <div key={d} className="text-center text-[10px] font-medium text-gray-400 dark:text-slate-500 py-1">{d}</div>
+            <View key={d} className="flex-1 items-center py-1">
+              <Text style={{ fontSize: 10 }} className="font-medium text-gray-400">{d}</Text>
+            </View>
           ))}
-        </div>
+        </View>
 
         {/* Day cells */}
-        <div className="grid grid-cols-7 gap-1">
+        <View className="flex-row flex-wrap">
           {calCells.map((date, i) => {
-            if (!date) return <div key={i} />;
+            if (!date) return <View key={i} style={{ width: `${100/7}%` }} className="aspect-square" />;
             const pts  = scoreMap.get(date) ?? 0;
             const isToday   = date === today;
             const isSelected = date === selected;
             const isFuture  = date > today;
             return (
-              <button
+              <TouchableOpacity
                 key={date}
-                onClick={() => !isFuture && setSelected(date)}
+                onPress={() => !isFuture && setSelected(date)}
                 disabled={isFuture}
-                className={`
-                  relative aspect-square rounded-lg flex flex-col items-center justify-center
-                  transition-all text-xs font-medium
-                  ${isFuture ? "opacity-20 cursor-not-allowed" : "cursor-pointer"}
-                  ${isSelected ? "ring-2 ring-indigo-500 ring-offset-1" : ""}
-                  ${pts > 0 ? heatColor(pts) : "bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700"}
-                  ${isToday && !isSelected ? "ring-2 ring-indigo-300" : ""}
-                `}
+                style={{
+                  width: `${100/7}%`,
+                  aspectRatio: 1,
+                  padding: 2,
+                  borderWidth: isSelected ? 2 : isToday && !isSelected ? 1.5 : 0,
+                  borderColor: isSelected ? "#6366f1" : isToday ? "#a5b4fc" : "transparent",
+                  borderRadius: 8,
+                }}
+                className={`items-center justify-center ${
+                  isFuture ? "opacity-20" : ""
+                } ${pts > 0 ? heatBg(pts) : "bg-gray-50"}`}
               >
-                <span className={`text-[11px] font-semibold leading-none ${pts > 0 ? heatTextColor(pts) : "text-gray-400 dark:text-slate-500"}`}>
+                <Text style={{ fontSize: 11 }} className={`font-semibold leading-none ${pts > 0 ? heatText(pts) : "text-gray-400"}`}>
                   {new Date(date + "T00:00:00").getDate()}
-                </span>
+                </Text>
                 {pts > 0 && (
-                  <span className={`text-[9px] leading-none mt-0.5 ${heatTextColor(pts)}`}>
+                  <Text style={{ fontSize: 9 }} className={`leading-none mt-0.5 ${heatText(pts)}`}>
                     {pts >= 1000 ? `${(pts / 1000).toFixed(1)}k` : pts}
-                  </span>
+                  </Text>
                 )}
-              </button>
+              </TouchableOpacity>
             );
           })}
-        </div>
-      </div>
+        </View>
+      </View>
 
       {/* ── Selected Day Detail ──────────────────────── */}
       {selected && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">
+        <View className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-sm font-semibold text-gray-800">
               {new Date(selected + "T00:00:00").toLocaleDateString("en-US", {
                 weekday: "long", month: "long", day: "numeric",
               })}
-            </h3>
-            <span className={`text-sm font-bold ${selectedScore > 0 ? "text-indigo-600" : "text-gray-400 dark:text-slate-500"}`}>
+            </Text>
+            <Text className={`text-sm font-bold ${selectedScore > 0 ? "text-indigo-600" : "text-gray-400"}`}>
               {selectedScore} pts
-            </span>
-          </div>
+            </Text>
+          </View>
 
           {selectedEntries.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-slate-500">No activities logged this day.</p>
+            <Text className="text-sm text-gray-400">No activities logged this day.</Text>
           ) : (
-            <div className="space-y-2">
+            <View className="gap-y-2">
               {selectedEntries.map((e) => (
-                <div key={e.id} className="flex items-center gap-3 py-1.5 px-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                  <span>{CATEGORY_ICONS[e.category]}</span>
-                  <span className="text-sm text-gray-700 dark:text-slate-200 flex-1">{entryLabel(e)}</span>
+                <View key={e.id} className="flex-row items-center gap-3 py-1.5 px-3 bg-gray-50 rounded-lg">
+                  <Text>{CATEGORY_ICONS[e.category]}</Text>
+                  <Text className="text-sm text-gray-700 flex-1">{entryLabel(e)}</Text>
                   {e.duration > 0 && (
-                    <span className="text-xs text-gray-400 dark:text-slate-500">{e.duration} min</span>
+                    <Text className="text-xs text-gray-400">{e.duration} min</Text>
                   )}
                   {e.note && (
-                    <span className="text-xs text-gray-400 dark:text-slate-500 italic">{e.note}</span>
+                    <Text className="text-xs text-gray-400 italic">{e.note}</Text>
                   )}
-                </div>
+                </View>
               ))}
-            </div>
+            </View>
           )}
-        </div>
+        </View>
       )}
-    </div>
+    </View>
   );
 }

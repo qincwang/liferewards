@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Category, LogEntry } from "../types";
 import { CATEGORY_ICONS, CATEGORY_LABELS } from "../types";
 
@@ -57,13 +58,6 @@ function shiftDate(dateStr: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function formatDateShort(isoDate: string): string {
-  const [y, m, d] = isoDate.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
-    month: "short", day: "numeric",
-  });
-}
-
 function getStreakOnDate(entries: LogEntry[], category: Category, date: string): number {
   const byDate = new Map<string, LogEntry[]>();
   for (const e of entries) {
@@ -88,38 +82,43 @@ export function useStreakFunerals(entries: LogEntry[]) {
   const [queue, setQueue] = useState<StreakFuneral[]>([]);
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const yesterday = shiftDate(today, -1);
-    const funerals: StreakFuneral[] = [];
+    async function checkFunerals() {
+      const today = new Date().toISOString().slice(0, 10);
+      const yesterday = shiftDate(today, -1);
+      const funerals: StreakFuneral[] = [];
 
-    for (const cat of CATEGORIES) {
-      const todayStreak = getStreakOnDate(entries, cat, today);
-      if (todayStreak > 0) continue; // streak alive, skip
+      for (const cat of CATEGORIES) {
+        const todayStreak = getStreakOnDate(entries, cat, today);
+        if (todayStreak > 0) continue; // streak alive, skip
 
-      const yesterdayStreak = getStreakOnDate(entries, cat, yesterday);
-      if (yesterdayStreak < 2) continue; // too short to mourn
+        const yesterdayStreak = getStreakOnDate(entries, cat, yesterday);
+        if (yesterdayStreak < 2) continue; // too short to mourn
 
-      const funeralId = `funeral_${cat}_${today}`;
-      if (sessionStorage.getItem(funeralId)) continue; // already shown
-      sessionStorage.setItem(funeralId, "1");
+        const funeralId = `funeral_${cat}_${today}`;
+        const alreadyShown = await AsyncStorage.getItem(funeralId);
+        if (alreadyShown) continue; // already shown
+        await AsyncStorage.setItem(funeralId, "1");
 
-      const startDate = shiftDate(yesterday, -(yesterdayStreak - 1));
-      const epitaphs = EPITAPHS[cat];
-      const epitaph = epitaphs[Math.floor(Math.random() * epitaphs.length)];
+        const startDate = shiftDate(yesterday, -(yesterdayStreak - 1));
+        const epitaphs = EPITAPHS[cat];
+        const epitaph = epitaphs[Math.floor(Math.random() * epitaphs.length)];
 
-      funerals.push({
-        id: funeralId,
-        category: cat,
-        icon: CATEGORY_ICONS[cat],
-        label: CATEGORY_LABELS[cat],
-        streakDays: yesterdayStreak,
-        startDate,
-        endDate: yesterday,
-        epitaph,
-      });
+        funerals.push({
+          id: funeralId,
+          category: cat,
+          icon: CATEGORY_ICONS[cat],
+          label: CATEGORY_LABELS[cat],
+          streakDays: yesterdayStreak,
+          startDate,
+          endDate: yesterday,
+          epitaph,
+        });
+      }
+
+      if (funerals.length > 0) setQueue((q) => [...q, ...funerals]);
     }
 
-    if (funerals.length > 0) setQueue((q) => [...q, ...funerals]);
+    checkFunerals();
   }, [entries]);
 
   const dismiss = () => setQueue((q) => q.slice(1));

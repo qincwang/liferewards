@@ -1,3 +1,5 @@
+import { View, Text } from "react-native";
+
 const PASSAGES = [
   {
     text: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.",
@@ -135,11 +137,6 @@ const PASSAGES = [
     author: "Mark Twain",
   },
   {
-    text: "It was the best of times, it was the worst of times. We had a kettle; we let it leak: our not repairing it made it worse. We hadn't a wriggle of a string; so we let it lie. We didn't do a blessed thing with our whole soul, but could not stop doing something with our half soul. We were neither thoroughly comfortable nor thoroughly uncomfortable.",
-    book: "Bleak House",
-    author: "Charles Dickens",
-  },
-  {
     text: "The sky grows dark. The first white flakes fall silently, blotting out the world with an almost violent tenderness. Inside the house a fire burns. Outside, the trees bow and sway. There is a kind of mercy in winter — it asks nothing of you. It simply comes.",
     book: "The Magic Mountain",
     author: "Thomas Mann",
@@ -180,19 +177,19 @@ export default function DailyPassage() {
   const passage = getDailyPassage();
 
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-amber-100 dark:border-slate-700 p-5">
-      <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-3">
+    <View className="bg-amber-50 rounded-2xl border border-amber-100 p-5">
+      <Text className="text-xs font-bold uppercase tracking-widest text-amber-600 mb-3">
         📖 Daily Reading
-      </p>
-      <blockquote className="text-sm leading-relaxed text-gray-700 dark:text-slate-300 italic mb-4">
+      </Text>
+      <Text className="text-sm leading-relaxed text-gray-700 italic mb-4">
         "{passage.text}"
-      </blockquote>
-      <div className="flex items-center gap-1.5">
-        <div className="flex-1 h-px bg-amber-200 dark:bg-slate-600" />
-        <p className="text-xs text-amber-700 dark:text-amber-400 font-medium whitespace-nowrap">
+      </Text>
+      <View className="flex-row items-center gap-1.5">
+        <View className="flex-1 h-px bg-amber-200" />
+        <Text className="text-xs text-amber-700 font-medium">
           {passage.book} · {passage.author}
-        </p>
-      </div>
-    </div>
+        </Text>
+      </View>
+    </View>
   );
 }
