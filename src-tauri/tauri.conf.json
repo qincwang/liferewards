@@ -32,7 +32,7 @@
     },
     "trayIcon": {
       "id": "main",
-      "iconPath": "icons/32x32.png",
+      "iconPath": "icons/tray.png",
       "iconAsTemplate": true,
       "menuOnLeftClick": false,
       "tooltip": "LifeRewards"
