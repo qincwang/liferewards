@@ -10,6 +10,7 @@ import ScoreCard from "./ScoreCard";
 import WeeklyRatingCard from "./WeeklyRatingCard";
 import DailyPassage from "./DailyPassage";
 import DailyTasks from "./DailyTasks";
+import WeightTracker from "./WeightTracker";
 
 interface DashboardProps {
   entries: LogEntry[];
@@ -45,6 +46,9 @@ export default function Dashboard({ entries }: DashboardProps) {
 
       {/* Daily Tasks */}
       <DailyTasks />
+
+      {/* Weight */}
+      <WeightTracker />
 
       {/* Weekly Rating */}
       <WeeklyRatingCard weeklyRating={weeklyRating} />
