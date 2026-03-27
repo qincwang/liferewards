@@ -20,7 +20,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 const QUICK_OPTIONS: { label: string; activityId: string; duration: number }[] = [
   { label: "30m Bouldering", activityId: "bouldering", duration: 30 },
   { label: "30m Cardio", activityId: "cardio", duration: 30 },
-  { label: "1h Work", activityId: "work_general", duration: 60 },
+  { label: "4h Work", activityId: "work_general", duration: 240 },
   { label: "30m Guitar", activityId: "electric_guitar", duration: 30 },
   { label: "30m Reading", activityId: "reading_general", duration: 30 },
 ];
@@ -51,6 +51,7 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
     ACTIVITIES.find((a) => a.id === "bouldering")!
   );
   const [duration, setDuration] = useState("");
+  const [durationUnit, setDurationUnit] = useState<"min" | "hr">("min");
   const [note, setNote] = useState("");
 
   // Habit mode
@@ -67,8 +68,9 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
 
   function handleActivitySubmit(e: React.FormEvent) {
     e.preventDefault();
-    const mins = parseInt(duration, 10);
-    if (!mins || mins <= 0) return;
+    const val = parseFloat(duration);
+    if (!val || val <= 0) return;
+    const mins = durationUnit === "hr" ? Math.round(val * 60) : Math.round(val);
     onLog(selectedActivity.id, mins, undefined, note || undefined, logDate);
     setDuration("");
     setNote("");
@@ -208,15 +210,25 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
 
             {/* Duration + note */}
             <div className="flex gap-3">
-              <input
-                type="number"
-                placeholder="Minutes"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                min="1"
-                max="480"
-                className="flex-1 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-              />
+              <div className="flex-1 flex gap-1.5">
+                <input
+                  type="number"
+                  placeholder={durationUnit === "hr" ? "Hours" : "Minutes"}
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  min="0.1"
+                  step={durationUnit === "hr" ? "0.5" : "1"}
+                  max={durationUnit === "hr" ? "12" : "480"}
+                  className="flex-1 min-w-0 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => { setDurationUnit(durationUnit === "min" ? "hr" : "min"); setDuration(""); }}
+                  className="px-2.5 py-2 text-xs font-semibold rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors shrink-0"
+                >
+                  {durationUnit === "min" ? "min" : "hr"}
+                </button>
+              </div>
               <input
                 type="text"
                 placeholder="Note (optional)"
