@@ -27,7 +27,7 @@ export default function ScoreCard({ category, score, streak }: ScoreCardProps) {
         )}
       </div>
       <div className={`text-2xl font-bold mb-2 ${isNegative ? "text-red-500" : "text-gray-800 dark:text-slate-100"}`}>
-        {isNegative ? "" : score > 0 && isHabits ? "+" : ""}{score}
+        {isNegative ? "" : score > 0 && category === "habits" ? "+" : ""}{score}
         <span className="text-xs font-normal text-gray-400 dark:text-slate-500 ml-1">pts</span>
       </div>
       <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
