@@ -57,12 +57,16 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
   // Habit mode
   const [mealType, setMealType] = useState<MealType>("clean");
 
+  const [successCount, setSuccessCount] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const logDate = dayOffset === "today" ? getToday() : getYesterday();
 
   function flashSuccess() {
-    setShowSuccess(true);
+    setSuccessCount((c) => c + 1);
+    setShowSuccess(false);
+    // Force re-render so the flash restarts even on rapid clicks
+    requestAnimationFrame(() => setShowSuccess(true));
     setTimeout(() => setShowSuccess(false), 1500);
   }
 
@@ -216,7 +220,7 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
                   placeholder={durationUnit === "hr" ? "Hours" : "Minutes"}
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  min="0.1"
+                  min={durationUnit === "hr" ? "0.5" : "1"}
                   step={durationUnit === "hr" ? "0.5" : "1"}
                   max={durationUnit === "hr" ? "12" : "480"}
                   className="flex-1 min-w-0 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
@@ -242,7 +246,7 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
               type="submit"
               className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
             >
-              {showSuccess ? "✓ Logged!" : `Log ${selectedActivity.label}`}
+              {showSuccess ? `✓ Logged! (${successCount})` : `Log ${selectedActivity.label}`}
             </button>
           </form>
         </>
@@ -301,7 +305,7 @@ export default function LogForm({ onLog, weekHeavyMeals }: LogFormProps) {
               onClick={() => handleHabitLog("meal", mealType)}
               className="w-full py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors"
             >
-              {showSuccess ? "✓ Logged!" : "Log Meal"}
+              {showSuccess ? `✓ Logged! (${successCount})` : "Log Meal"}
             </button>
           </div>
         </div>
